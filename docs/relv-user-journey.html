@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>relv — user journey</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #faf7f2;
+    --ink: #17161a;
+    --muted: #6b6678;
+    --soft: #b9b3c4;
+    --accent: #e8452e;
+    --accent-tint: rgba(232, 69, 46, 0.08);
+    --link: #1c46c8;
+    --rule: rgba(23, 22, 26, 0.10);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'Geist', sans-serif; padding: 48px; }
+  .eyebrow { font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: 'Instrument Serif', serif; font-size: 44px; font-weight: 400; margin: 10px 0 6px; }
+  .subtitle { font-family: 'Geist', sans-serif; font-size: 15px; color: var(--muted); margin-bottom: 40px; max-width: 640px; }
+  svg { display: block; max-width: 1248px; }
+</style>
+</head>
+<body>
+<p class="eyebrow">relv · user journey</p>
+<h1>From firehose to absorbed, in one paste</h1>
+<p class="subtitle">How an agent-stack user meets a new tool, hands it to relv, and ends with a decision their agent can already act on.</p>
+
+<svg viewBox="0 0 1248 700" role="img" aria-labelledby="relvj-title relvj-desc" width="100%">
+  <title id="relvj-title">relv user journey: encounter to absorb</title>
+  <desc id="relvj-desc">A five-stage journey map for an agent-stack user: Encounter (low sentiment), Investigate (medium-low, the trough), Verdict (neutral), Adjacency (medium-high), Absorb (high). relv converts firehose triage pain into a grounded verdict, adjacent finds, and an ingest-ready file the user's agent absorbs.</desc>
+
+  <!-- ===== Stage headers (y 0..56) — cols at x 64/288/512/736/960, width 200, centers 164/388/612/836/1060 ===== -->
+  <g font-family="'Geist Mono', monospace" font-size="9" letter-spacing="0.14em" fill="#6b6678" text-anchor="middle">
+    <text x="164" y="20">STAGE 1</text>
+    <text x="388" y="20">STAGE 2</text>
+    <text x="612" y="20">STAGE 3</text>
+    <text x="836" y="20">STAGE 4</text>
+    <text x="1060" y="20">STAGE 5</text>
+  </g>
+  <g font-family="'Geist', sans-serif" font-size="13" font-weight="600" fill="#17161a" text-anchor="middle">
+    <text x="164" y="40">ENCOUNTER</text>
+    <text x="388" y="40">INVESTIGATE</text>
+    <text x="612" y="40">VERDICT</text>
+    <text x="836" y="40">ADJACENCY</text>
+    <text x="1060" y="40">ABSORB</text>
+  </g>
+
+  <!-- ===== Sentiment band (y 64..224). Levels: HIGH 64 / MED-HIGH 104 / NEUTRAL 144 / MED-LOW 184 / LOW 224 ===== -->
+  <g font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678" text-anchor="end">
+    <text x="56" y="69">HIGH</text>
+    <text x="56" y="149">NEUTRAL</text>
+    <text x="56" y="229">LOW</text>
+  </g>
+  <g stroke="rgba(23,22,26,0.16)" stroke-width="2.5">
+    <line x1="64" y1="64" x2="1160" y2="64"/>
+    <line x1="64" y1="144" x2="1160" y2="144"/>
+    <line x1="64" y1="224" x2="1160" y2="224"/>
+  </g>
+
+  <!-- Sentiment curve: LOW 224 → MED-LOW 184 → NEUTRAL 144 → MED-HIGH 104 → HIGH 64.
+       Trough = Stage 2 (Investigate). Incoming segment (dot1→dot2) + trough dot = accent. -->
+  <path d="M 164 224 H 268 Q 276 224 276 216 V 192 Q 276 184 284 184 H 388" fill="none" stroke="#e8452e" stroke-width="3.5"/>
+  <path d="M 388 184 H 492 Q 500 184 500 176 V 152 Q 500 144 508 144 H 612" fill="none" stroke="rgba(23,22,26,0.55)" stroke-width="3"/>
+  <path d="M 612 144 H 716 Q 724 144 724 136 V 112 Q 724 104 732 104 H 836" fill="none" stroke="rgba(23,22,26,0.55)" stroke-width="3"/>
+  <path d="M 836 104 H 940 Q 948 104 948 96 V 72 Q 948 64 956 64 H 1060" fill="none" stroke="rgba(23,22,26,0.55)" stroke-width="3"/>
+  <circle cx="164" cy="224" r="8" fill="#17161a"/>
+  <circle cx="388" cy="184" r="8" fill="#e8452e"/>
+  <circle cx="612" cy="144" r="8" fill="#17161a"/>
+  <circle cx="836" cy="104" r="8" fill="#17161a"/>
+  <circle cx="1060" cy="64" r="8" fill="#17161a"/>
+
+  <!-- ===== ACTIONS band (y 252..360) ===== -->
+  <line x1="64" y1="252" x2="1160" y2="252" stroke="rgba(23,22,26,0.22)" stroke-width="2.5"/>
+  <text x="30" y="272" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678" letter-spacing="0.14em">ACTIONS</text>
+  <g font-family="'Geist', sans-serif" font-size="12" font-weight="500" fill="#17161a" text-anchor="middle">
+    <text x="164" y="276">Spots a new tool in the feed,</text>
+    <text x="164" y="292">saves the tab for later</text>
+    <text x="388" y="276">Pastes URL, app name, or text</text>
+    <text x="388" y="292">into relv</text>
+    <text x="612" y="276">Reads PRODUCT / ASPECT /</text>
+    <text x="612" y="292">NONE — each with its why</text>
+    <text x="836" y="276">Scans the adjacent finds,</text>
+    <text x="836" y="292">keeps what resonates</text>
+    <text x="1060" y="276">Emits an ingest file;</text>
+    <text x="1060" y="292">agent absorbs it</text>
+  </g>
+  <!-- Pain markers (trough column, under its actions cell) — max 2 -->
+  <rect x="308" y="306" width="160" height="16" rx="2" fill="rgba(232,69,46,0.08)" stroke="#e8452e" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="388" y="317" font-family="'Geist Mono', monospace" font-size="8" fill="#e8452e" text-anchor="middle" letter-spacing="0.06em">FIREFHOSE &gt; SPARE HOURS</text>
+  <rect x="308" y="328" width="160" height="16" rx="2" fill="rgba(232,69,46,0.08)" stroke="#e8452e" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="388" y="339" font-family="'Geist Mono', monospace" font-size="8" fill="#e8452e" text-anchor="middle" letter-spacing="0.06em">GENERIC LISTS = SLUDGE</text>
+
+  <!-- ===== TOUCHPOINTS band (y 360..430) ===== -->
+  <line x1="64" y1="360" x2="1160" y2="360" stroke="rgba(23,22,26,0.22)" stroke-width="2.5"/>
+  <text x="30" y="396" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678" letter-spacing="0.14em">TOUCHPOINTS</text>
+  <g font-family="'Geist Mono', monospace" font-size="9" font-weight="500" fill="#6b6678" text-anchor="middle">
+    <text x="164" y="388">X · Reddit · HN ·</text>
+    <text x="164" y="402">newsletters</text>
+    <text x="388" y="388">terminal — $ relv</text>
+    <text x="388" y="402">&lt;url|name|text&gt;</text>
+    <text x="612" y="388">verdict JSON —</text>
+    <text x="612" y="402">grabs + whys</text>
+    <text x="836" y="388">adjacency card —</text>
+    <text x="836" y="402">angle + relevance</text>
+    <text x="1060" y="388">00-Ingest/ — markdown</text>
+    <text x="1060" y="402">wikilinks, absorbable</text>
+  </g>
+
+  <!-- ===== OUTCOME band (y 430..500) ===== -->
+  <line x1="64" y1="430" x2="1160" y2="430" stroke="rgba(23,22,26,0.22)" stroke-width="2.5"/>
+  <text x="30" y="466" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678" letter-spacing="0.14em">OUTCOME</text>
+  <g font-family="'Geist', sans-serif" font-size="12" font-weight="500" fill="#1c46c8" text-anchor="middle">
+    <text x="164" y="458">One more open tab,</text>
+    <text x="164" y="474">a decision deferred</text>
+    <text x="388" y="458">Triage delegated —</text>
+    <text x="388" y="474">the profile does the reading</text>
+    <text x="612" y="458">A call, not a vibe:</text>
+    <text x="612" y="474">adopt · steal · skip</text>
+    <text x="836" y="458">Doors the tool itself</text>
+    <text x="836" y="474">never opened</text>
+    <text x="1060" y="458">Lands in the agent's</text>
+    <text x="1060" y="474">existing workflow</text>
+  </g>
+
+  <!-- ===== Legend strip ===== -->
+  <line x1="30" y1="560" x2="1218" y2="560" stroke="rgba(23,22,26,0.22)" stroke-width="2"/>
+  <text x="30" y="578" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678" letter-spacing="0.14em">LEGEND</text>
+  <line x1="100" y1="576" x2="136" y2="576" stroke="rgba(23,22,26,0.55)" stroke-width="3"/>
+  <circle cx="118" cy="576" r="4" fill="#17161a"/>
+  <text x="144" y="578" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678">SENTIMENT CURVE</text>
+  <circle cx="320" cy="576" r="5" fill="#e8452e"/>
+  <text x="332" y="578" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678">TROUGH — INVESTIGATE (PRE-RELV PAIN)</text>
+  <rect x="596" y="568" width="34" height="14" rx="2" fill="none" stroke="#e8452e" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="638" y="578" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#6b6678">PAIN MARKER</text>
+
+  <!-- Colophon -->
+  <text x="30" y="640" font-family="'Geist Mono', monospace" font-size="8" font-weight="600" fill="#b9b3c4" letter-spacing="0.10em">RELV · RELEVATOR — PROFILE-GROUNDED TRIAGE + ADJACENCY MINING · DIAGRAM-DESIGN v2.6</text>
+</svg>
+</body>
+</html>

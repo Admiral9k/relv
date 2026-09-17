@@ -1,0 +1,119 @@
+{
+  "verdict": {
+    "content_summary": "Goblin Tools is a free web app (cheap one-time mobile purchase) by a solo dev, offering eight single-purpose AI micro-tools aimed at neurodivergent users: Magic ToDo (breaks tasks into sub-steps with adjustable granularity), Formalizer (tone rewriting), Judge (reads intent/tone of messages), Taskmaster (one-task-at-a-time focus), Professor (explains topics), Consultant (guesses an activity's timeframe), Compiler (braindump \u2192 structured action list), and Chef (ingredients \u2192 recipe). Its whole thesis is reducing overwhelm: one tool, one button, one job, with playful non-clinical framing.",
+    "grabs": [
+      {
+        "type": "product",
+        "what": "Goblin Tools free web version \u2014 as an immediate daily tool for his son",
+        "why": "EMRALD is built around his son's ADHD needs, and this is the most widely adopted consumer ADHD AI tool. It's free on web (no subscription sprawl), and his son's real usage doubles as live competitive research: which of the eight micro-tools he actually reaches for is direct roadmap signal for EMRALD before he commits build time."
+      },
+      {
+        "type": "aspect",
+        "what": "Micro-tool suite architecture: named, single-purpose, one-button tools instead of a monolithic chat assistant",
+        "why": "EMRALD's biggest UX risk is cognitive load for ADHD users. Goblin Tools proves the 'one tool, one job, zero configuration' pattern in exactly his target audience \u2014 a tool-palette structure EMRALD could adopt over a chat-first interface."
+      },
+      {
+        "type": "aspect",
+        "what": "Adjustable decomposition granularity \u2014 Magic ToDo's slider controlling how many sub-steps a task explodes into",
+        "why": "Task breakdown is core ADHD support; letting the user dial breakdown depth rather than accept a fixed output is a cheap, high-signal mechanism to port into EMRALD's planning features."
+      },
+      {
+        "type": "aspect",
+        "what": "Compiler pattern: freeform braindump in \u2192 clean structured action list out",
+        "why": "Matches his ingest-pipeline values (markdown, ingest queues). A 'chaos front door' that accepts messy capture and emits structured output is an EMRALD feature candidate, and the same pattern ports to WeldDesk: narrative field notes \u2192 structured NCR/inspection report drafts."
+      },
+      {
+        "type": "aspect",
+        "what": "AI timeframe estimation for activities (counters time blindness)",
+        "why": "Time estimation is a named ADHD pain point and a small differentiating EMRALD feature; the same mechanism could port to WeldDesk as inspection-time estimation for scheduling."
+      }
+    ],
+    "aspects": [
+      "Single-purpose micro-tool suite: many tiny named tools, each one input \u2192 one output, instead of a monolithic assistant",
+      "User-adjustable decomposition granularity (control how finely a task is broken down)",
+      "Braindump-to-structured-output compilation (messy freeform text \u2192 clean actionable list)",
+      "Tone transformation / register rewriting of text",
+      "AI time-estimation of activities to counter time blindness",
+      "Playful, destigmatizing naming and framing for neurodivergent audiences ('for when things feel too big')",
+      "Constraint-to-plan generation (ingredients \u2192 recipe generalizes to available resources \u2192 structured plan)"
+    ],
+    "adjacency_queries": [
+      "turn messy field notes into structured inspection checklist software",
+      "AI tool that estimates task duration from a text description",
+      "generate a structured plan from available inventory and constraints app"
+    ],
+    "_model": "z-ai/glm-5.3",
+    "_profile": "devon",
+    "_input": "https://goblin.tools"
+  },
+  "adjacency": {
+    "tavily": {
+      "finds": [
+        {
+          "name": "Alpha Software Building Construction Inspection App",
+          "url": "https://markets.businessinsider.com/news/stocks/alpha-software-unveils-building-construction-inspection-checklist-mobile-app-1035547306",
+          "what_it_is": "An offline-first mobile construction inspection app with one-tap pass/fail, speech-to-text, annotated photo/video capture, and auto-sync to back-office systems.",
+          "different_angle": "Uses 'constraint-to-plan / messy-input-to-structured-output' from a hardware-and-connectivity angle \u2014 glove-friendly, one-handed, offline field capture \u2014 instead of the AI braindump-compilation angle, producing structured records from physical constraints rather than text processing.",
+          "why_relevant_to_profile": "WeldDesk is a welding-industry inspection/documentation app; this shows field-condition-hardened patterns (offline sync, one-tap entry, hands-free dictation) directly portable to CWI field inspections and NCR documentation."
+        },
+        {
+          "name": "devtimate AI Project Estimates",
+          "url": "https://devtimate.com/ai-generated-estimates",
+          "what_it_is": "A tool that ingests messy source documents (RFPs, specs, user stories, transcripts, markdown, plain text) and compiles them into structured software project estimates.",
+          "different_angle": "Same braindump-to-structured-output compilation aspect, but aimed at client-facing project estimation rather than personal task breakdown \u2014 it treats ambiguity in requirements documents, not in a user's own scattered notes.",
+          "why_relevant_to_profile": "He runs a solo software company with multiple products (WeldDesk, EMRALD, Qarett); this pattern could feed his ingest pipeline for scoping client/custom dev work, and its markdown-in/structured-out design matches his Obsidian-markdown tooling preferences."
+        },
+        {
+          "name": "MakePlan LiDAR Floor Plan App",
+          "url": "https://markets.businessinsider.com/news/stocks/makeplan-introduces-lidar-based-floor-plan-app-for-property-measurement-on-iphone-1036016014",
+          "what_it_is": "An iPhone app that uses LiDAR scanning to capture room dimensions during site visits and immediately generate structured floor plans.",
+          "different_angle": "Constraint-to-plan generation from physical-sensor constraints (LiDAR point clouds) instead of textual constraints (ingredients \u2192 recipe) \u2014 the 'available resources' are captured geometry, not listed inputs.",
+          "why_relevant_to_profile": "Welding inspection workflows involve dimensional verification against WPS/PQR requirements; the scan-to-structured-document pattern suggests a port for capturing weld joint geometry or fit-up dimensions directly into CWI-printable docs in WeldDesk."
+        },
+        {
+          "name": "Projectbook \u2014 AI Task Estimation Guide",
+          "url": "https://projectbook.co/blog/how-to-use-ai-for-task-estimation-without-getting-burned",
+          "what_it_is": "A guide on using AI task estimators that learn from your past tracked durations to flag complexity and prevent estimation burn.",
+          "different_angle": "Tackles the AI time-estimation-vs-time-blindness aspect at the team/project-management level (estimator vs. actuals, task-type tagging) rather than the personal ADHD self-support level.",
+          "why_relevant_to_profile": "EMRALD is built for ADHD users including his son; this supplies the honest-negative-results framing (when estimates get burned) and a historical-actuals approach that could differentiate EMRALD's time-blindness features from toy estimators."
+        }
+      ],
+      "sludge_check": "I discarded generic field-inspection roundups (Blitzz, Appfarm) that only list category content without a distinct angle, and skipped Taskade/ohai.ai as generic AI-power-user tools; the remaining four each apply a triaged aspect from a different domain and map concretely onto WeldDesk's inspection docs, EMRALD's ADHD estimation, or his markdown-first ingest stack.",
+      "_backend": "tavily"
+    },
+    "exa": {
+      "finds": [
+        {
+          "name": "FieldNote AI",
+          "url": "https://www.fieldsnotesai.com/",
+          "what_it_is": "Offline-first app for structural engineers that turns voice notes and photo callouts from site walks into finished inspection reports with deficiency ratings attached to specific structural elements.",
+          "different_angle": "Braindump-to-structured-output compilation taken into offline field inspection for structural engineering \u2014 raw site-walk voice/photo capture self-assembling into a report, rather than a desk-side note-taking tool.",
+          "why_relevant_to_profile": "WeldDesk is a welding-industry inspection/documentation app; FieldNote demonstrates a report-builds-itself capture pattern (offline voice\u2192structured inspection items) that could port directly to CWI field documentation and NCR workflows, and its offline-first constraint fits job sites."
+        },
+        {
+          "name": "Epoch (KyaniteLabs)",
+          "url": "https://github.com/kyanitelabs/epoch",
+          "what_it_is": "An open-source MCP server exposing 25 estimation tools (PERT, COCOMO II, Monte Carlo, reference class forecasting) so AI agents can produce grounded time/cost estimates instead of hallucinated ones.",
+          "different_angle": "AI time-estimation reframed as skepticism infrastructure: instead of a feature inside an ADHD tool, it packages established estimation methodologies as callable tools that correct agents' systematic time-blindness.",
+          "why_relevant_to_profile": "Feeds both halves of his stack: EMRALD targets ADHD time blindness and Epoch's anti-hallucinated-timelines approach is a stealable pattern; it's also an npx-installable MCP he can wire into Hermes immediately, and it's open-source so it passes his self-host/no-subscription test."
+        },
+        {
+          "name": "AI Stock Transfer Planner (LogicBalls)",
+          "url": "https://logicballs.com/tools/stock-transfer-planner",
+          "what_it_is": "A single-purpose planner that refuses to generate a logistics plan until the user supplies verified inventory/transfer constraints, then outputs a structured roadmap within those hard parameters.",
+          "different_angle": "Constraint-to-plan generation flipped from recipe-cooking to adversarial constraint enforcement \u2014 the tool's core value is refusing to hallucinate context rather than generating a friendly plan.",
+          "why_relevant_to_profile": "The refuse-until-constrained pattern is exactly what WPS/PQR document generation needs (welding parameters, codes, and materials are hard constraints where hallucination is a QA failure), and its stubborn one-input-one-output micro-tool shape matches his preference for small named tools he can port."
+        },
+        {
+          "name": "InspectAndGo",
+          "url": "https://inspectandgo.com.au/features",
+          "what_it_is": "Offline-capable field inspection platform that transcribes dictated observations via Gemini into structured inspection items, with GPS photos and checklists, billing itself as 'the inspection is the report.'",
+          "different_angle": "Tone/register transformation applied to physical labor context: hands-free dictation becomes compliant report language while the inspector keeps working, not a writing-style tool for documents.",
+          "why_relevant_to_profile": "Directly adjacent to WeldDesk \u2014 'walk, talk, photograph' while documentation happens in parallel is a companion-first design for CWIs wearing gloves on job sites, and the offline-then-sync architecture mirrors his SQLite/Replit constraints."
+        }
+      ],
+      "sludge_check": "I discarded generic time-estimation finds (Odoo AI Task Estimator, Kine, the estimate-assistant plugin) because they're team-sprint planning tools with no port to his welding-QA or ADHD products, and dropped DocsFlow as a redundant weaker version of FieldNote AI; the four kept finds each steal a specific aspect (braindump compilation, grounded time-estimation as agent tools, constraint-refusal planning, hands-free field register) with a concrete port path to WeldDesk, EMRALD, or Hermes.",
+      "_backend": "exa"
+    }
+  }
+}

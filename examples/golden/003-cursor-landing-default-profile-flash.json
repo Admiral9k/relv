@@ -1,0 +1,90 @@
+{
+  "verdict": {
+    "content_summary": "Marketing homepage for Cursor, a subscription AI coding agent platform (IDE + cloud service). Core offerings: agentic development where you hand off coding tasks, cloud agents that run autonomously in parallel on Cursor-hosted machines, an 'Automations' feature for always-on agents triggered by schedules or triggers, presence across terminal/Slack/GitHub, multi-model selection including Cursor's in-house Composer model, self-hosted machines (changelog), and heavy enterprise social proof (NVIDIA, Stripe, Fortune 500). It's a positioning page, not a technical document \u2014 mechanisms are described only at the feature-name level.",
+    "grabs": [
+      {
+        "type": "aspect",
+        "what": "The 'Automations' pattern: always-on agents triggered by schedules or triggers to build, maintain, and fix things without a human prompt",
+        "why": "The user already runs local agents for daily work but the profile implies prompt-initiated sessions. Recurring trigger-driven agents are implementable today on their Linux VPS with cron/systemd + their existing agent harness, converting one-off agent runs into standing maintenance jobs (vault hygiene, dependency bumps, doc backfills) that emit results into their ingest queue. Stealing the pattern costs nothing and requires no Cursor subscription."
+      },
+      {
+        "type": "aspect",
+        "what": "The parallel agent run-queue with structured per-run report artifacts (files explored, duration, summary, follow-up prompt hook)",
+        "why": "The demo UI models exactly what the user values: agent-native output. Each run produces an absorbable record \u2014 scope of exploration, time spent, outcome, and a 'follow up' affordance \u2014 rather than requiring the human to watch. This run-report shape is directly reusable as a documented JSON/markdown schema for the user's own local agents, making runs triageable in their Obsidian vault the same way they triage articles."
+      }
+    ],
+    "aspects": [
+      "Always-on agents triggered by schedules or external triggers for recurring maintenance rather than prompt-initiated sessions",
+      "Parallel isolated agent execution with a status-tracked task queue (this week / this month, running states)",
+      "Per-run structured report artifact: files explored, duration, human-readable summary, follow-up affordance",
+      "Graduated autonomy control ('autonomy slider'): scoped targeted edits at one end, full autonomous runs at the other",
+      "Multi-model routing with an automatic 'Auto/Suggested' per-task model selection layer",
+      "Same agent surfaced in every existing context (terminal, chat, PR reviews) instead of demanding a new environment",
+      "Cloud-hosted agent sandboxes where agents get 'their own computer' to build, test, and demo end to end"
+    ],
+    "adjacency_queries": [
+      "scheduled autonomous AI agents for recurring file and data maintenance workflows",
+      "parallel batch task orchestration with human review queue and per-task summary reports",
+      "adjustable autonomy levels human-in-the-loop control systems outside of coding"
+    ],
+    "_model": "z-ai/glm-5.3-flash",
+    "_profile": "default",
+    "_input": "https://www.cursor.com"
+  },
+  "adjacency": {
+    "tavily": {
+      "finds": [
+        {
+          "name": "Trigger.dev",
+          "url": "https://codingchallenges.substack.com/p/coding-challenge-122-ai-powered-contract",
+          "what_it_is": "Open-source durable background-job engine for Node/TypeScript that handles job queuing with retries, parallel execution with concurrency control, and execution tracing.",
+          "different_angle": "Treats the triaged content's status-tracked queue and schedule-trigger aspects as buildable infrastructure instead of product features: its durable pause-and-resume for human review is the primitive behind a graduated-autonomy gate, so you assemble the queue, run states, and per-run artifacts yourself in code on your own VPS rather than adopting someone's scheduler UI.",
+          "why_relevant_to_profile": "You run Node tooling and a Linux VPS, build your own projects, and reject tools duplicating what you already run \u2014 this hands you the parallel-queue and trigger aspects as a self-hosted, agent-callable library with BYO-key all the way down, and the per-run trace/output maps directly to your structured JSON artifact preference."
+        },
+        {
+          "name": "OpenHands",
+          "url": "https://www.youtube.com/watch?v=rcsliSIy_YU",
+          "what_it_is": "Open-source (MIT) coding agent platform; this talk covers running hundreds to thousands of agent instances concurrently on large refactors.",
+          "different_angle": "Takes the parallel-isolated-execution aspect to fleet scale, but swaps the cloud-hosted 'own computer' sandbox for local Docker sandboxes on your own hardware, and replaces per-run status-board oversight with human input aggregated at PR boundaries \u2014 review routing, not review queues.",
+          "why_relevant_to_profile": "It's MIT-licensed and self-hosted next to your existing local agents and git-everything workflow, so nothing stores data outside your control; and the talk's core pattern (one human steering a thousand agents via PRs instead of reviewing each run) is exactly the kind of aspect you steal even when you skip the tool."
+        },
+        {
+          "name": "Claude Code (headless / scheduled mode)",
+          "url": "https://computer-agents.com/compare/best-ai-agent-for-scheduled-tasks-and-recurring-workflows",
+          "what_it_is": "Anthropic's terminal-based coding agent, driven headlessly through terminal tooling, its SDK, and CI rather than as an interactive chat session.",
+          "different_angle": "Implements the 'always-on recurring maintenance' aspect as plain infrastructure \u2014 cron- or CI-triggered non-interactive runs on machines you own \u2014 instead of the original product's managed scheduler and cloud sandbox, turning scheduled agent work into scriptable, diffable terminal output.",
+          "why_relevant_to_profile": "It satisfies your hard constraints: CLI-first, works with your own API key (no embedded markup), runs on your Linux VPS alongside your current local agents, and emits agent-callable files that slot into your markdown vault's ingest queue instead of demanding a new environment."
+        }
+      ],
+      "sludge_check": "Discarded MindStudio, Manus, and Fountain City (walled-garden SaaS/managed services violating the BYO-key and data-control rules) and the Kimi/Medium explainers (generic multi-agent content with no product fit); the three remaining finds pass because each is open-source or CLI/BYO-key native and reframes one specific triaged aspect from an infrastructure, fleet-scale, or self-hosted angle rather than suggesting another hosted product.",
+      "_backend": "tavily"
+    },
+    "exa": {
+      "finds": [
+        {
+          "name": "FlowGate",
+          "url": "https://github.com/horrible-gh/FlowGate",
+          "what_it_is": "An open-source typed document pipeline where AI agents must register proof-of-work artifacts (Requirement \u2192 Task \u2192 Task Report) through an authenticated API before any handoff counts as done.",
+          "different_angle": "Inverts the per-run report artifact: instead of a human-readable summary handed to you after an autonomous run, the structured artifact is the enforcement mechanism \u2014 an agent can't claim completion without passing a typed gate approved by you or another agent, which also hard-codes the autonomy slider as per-handoff approval points rather than a global setting.",
+          "why_relevant_to_profile": "Open source, small, agent-callable via a documented API with typed artifacts \u2014 exactly your JSON-schema, agent-native-output style; its approval inbox is also a concrete pattern for your stated bottleneck of triaging which agent runs deserve an hour of attention."
+        },
+        {
+          "name": "Allma",
+          "url": "https://allma.dev/",
+          "what_it_is": "An open-source orchestration engine for durable, async AI+human workflows with human approvals, external-event waits, and agent guardrails.",
+          "different_angle": "Treats scheduled and trigger-fired agents as durable state machines rather than clean-session cron runs: executions survive week-long waits, pause on external events, and run agents inside explicit guardrails with evidence trails \u2014 autonomy as auditable workflow state instead of a session-level slider.",
+          "why_relevant_to_profile": "Open source and self-hostable, so it can run on your Linux VPS beside your local agents instead of a cloud sandbox; it adds the external-trigger and approval semantics to your agent stack without a walled garden, subscription, or data leaving your control."
+        },
+        {
+          "name": "Rills (batch & task approvals)",
+          "url": "https://rills.ai/docs/approvals/batch-and-task-approvals",
+          "what_it_is": "A human-review layer whose approval nodes come in structured shapes: approve/reject, multiple choice, free text, batch fanout into dozens of individual cards, and reviewer checklists.",
+          "different_angle": "Attacks the human side of parallel agent execution: rather than gating or orchestrating runs, it designs the triage surface itself \u2014 how one reviewer processes the outputs of dozens of parallel runs (fanout cards, checklists) without drowning.",
+          "why_relevant_to_profile": "Your stated bottleneck is triage, not discovery; even if you never adopt the platform, its approval-shape taxonomy is a stealable pattern for the review queue over your own agents' per-run reports, and the docs are readable without a login."
+        }
+      ],
+      "sludge_check": "I discarded Claude Code Routines (it is the triaged product itself, not adjacent), Warp/Hivra/V7 Go/Backend.AI (cloud SaaS schedulers that demand their platform and conflict with your local-first, BYO-key, no-data-outside-my-control rules), Orkes (overlaps Allma with a heavier commercial runtime), and the two academic autonomy papers (not products) \u2014 the three remaining finds are open-source or pattern-level, each tied to your artifact/JSON, self-host, and triage-bottleneck specifics.",
+      "_backend": "exa"
+    }
+  }
+}

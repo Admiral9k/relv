@@ -1,0 +1,94 @@
+{
+  "verdict": {
+    "content_summary": "v2 of an open-source, MIT-licensed local tool aimed at Obsidian users: it watches a filesystem 'inbox' folder for newly dropped markdown files, embeds them with local models, classifies each against the user's existing notes, and files them into the vault with suggested wikilinks. Fully offline, no API keys, plain markdown in and out. It is essentially an automated triage layer for clipping overload.",
+    "grabs": [
+      {
+        "type": "product",
+        "what": "The tool itself: filesystem-watch inbox + local-embedding classifier that files markdown into an Obsidian-style vault with wikilinks",
+        "why": "This targets the profile's exact stack, not an adjacent one: they explicitly run an Obsidian-style markdown vault with wikilinks and an ingest queue, and this automates precisely that queue's classification step. It passes every filter they state: local embeddings (no API keys, no markup reseller), fully offline (data stays under their control), MIT, plain text/markdown as the interface. The drop-folder design is agent-callable out of the box \u2014 their local agents can file documents by writing to the inbox, no UI required. The one thing to verify in triage is whether it beats their existing ingest workflow, but it is one of the rare candidates that clearly merits that hour."
+      },
+      {
+        "type": "aspect",
+        "what": "The drop-folder-as-integration-surface pattern: a plain directory as the tool's entire API",
+        "why": "Even if the classifier duplicates part of their existing queue, the interface design is worth stealing: no daemon config, no HTTP endpoints, no login \u2014 any process, script, or agent interoperates by writing a file and watching for the result. The profile explicitly prizes 'agent-native output: a tool that hands my agent a file.' This pattern can be applied to their own tooling (export staging, agent handoff folders, scheduled pipeline inputs) without adopting this product at all."
+      }
+    ],
+    "aspects": [
+      "Filesystem drop-folder as the whole integration surface \u2014 any script, agent, or human interoperates by writing a file; no API, no UI, no keys",
+      "Classifying incoming documents against an existing personal corpus using local embeddings to decide where they belong",
+      "Converting embedding similarity into human-readable knowledge-graph connections (suggested wikilinks), i.e. vectors as edges",
+      "Event-driven plain-text pipeline: a watcher turns a static markdown vault into a continuously processed queue"
+    ],
+    "adjacency_queries": [
+      "self-hosted email auto-triage local embeddings classification privacy first",
+      "on-device photo library semantic grouping offline auto-tagging embeddings",
+      "support ticket auto-routing semantic similarity local model open source"
+    ],
+    "_model": "z-ai/glm-5.3-flash",
+    "_profile": "default",
+    "_input": "Just shipped v2 of our open-source tool: it watches your file system for new markdown files dropped into an 'inbox' folder, auto-classifies them against your existing notes using local embeddings, and files them into your vault with wikilinks. No API keys, runs fully offline, MIT licensed. Built for Obsidian users who are drowning in clipped articles."
+  },
+  "adjacency": {
+    "tavily": {
+      "finds": [
+        {
+          "name": "Jina Embeddings v5 (self-hosted via llama.cpp / MLX / vLLM)",
+          "url": "https://www.stocktitan.net/news/ESTC/elastic-introduces-best-in-class-embedding-models-for-high-vgeysy6h9ljg.html",
+          "what_it_is": "Jina's latest open-weight embedding models, announced as an Elastic cloud service but also self-hostable via llama.cpp, vLLM, and MLX with Hugging Face setup instructions.",
+          "different_angle": "The triaged pipeline treats local embeddings as a fixed given and innovates on the routing around them; this attacks the layer below \u2014 swapping the embedding backbone itself \u2014 and the interesting part of the announcement isn't Elastic's cloud service but the fully local deployment path buried in it, so the classifier never touches an API or key.",
+          "why_relevant_to_profile": "You already do multi-model routing and try new models constantly; benchmarking v5 against your current embedder as a drop-in via llama.cpp on the Windows desktop or vLLM on the Linux VPS is exactly the one-hour triage bet you take, with no markup and no data leaving your machines."
+        },
+        {
+          "name": "Jina reranker (open-weight, via Elasticsearch Open Inference API)",
+          "url": "https://www.stocktitan.net/news/ESTC/elasticsearch-open-inference-api-now-supports-jina-ai-embeddings-and-jcnsjtfmbeo3.html",
+          "what_it_is": "An open-weight cross-encoder reranker model from Jina, exposed through Elasticsearch's Open Inference API alongside their embedding models.",
+          "different_angle": "Uses the same similarity signal as the triaged tool but inverts its role: instead of embeddings generating edges (suggested wikilinks), a reranker sits after embedding recall as a precision filter that re-scores the top-k candidates and kills false-positive links before they ever get written into the vault.",
+          "why_relevant_to_profile": "Your stated bottleneck is triage, and false-positive wikilink suggestions are precisely what burns that hour; a cross-encoder stage is small, open-weight, locally runnable, and slots into the existing watcher pipeline as an extra filter rather than replacing anything you run."
+        },
+        {
+          "name": "Prompt-based text classification walkthrough (YouTube)",
+          "url": "https://www.youtube.com/watch?v=henJv1DH2Ys&vl=en",
+          "what_it_is": "A walkthrough of classifying and labeling text using LLM prompts plus tooling for scaling the approach, as an alternative to embedding-based or trained classifiers.",
+          "different_angle": "Where the triaged tool classifies by geometric proximity (embedding similarity against the corpus), this classifies by semantic judgment \u2014 a model reads the document and reasons about which label fits \u2014 making it a tie-breaker method for the ambiguous cases that similarity scores can't resolve.",
+          "why_relevant_to_profile": "Your local agents can execute this pattern with zero new infrastructure: embeddings route the easy majority of the ingest queue, a prompted agent adjudicates the rest, and the label schema is just the markdown/JSON you already keep \u2014 this is a pattern to steal, not a platform to adopt."
+        }
+      ],
+      "sludge_check": "Discarded Temps (privacy analytics matches your values but uses none of the triaged aspects), GitLab Duo Self-Hosted (enterprise platform that demands moving into its workflow, which you explicitly reject), SoulX-Podcast TTS (no aspect overlap), and Google Photos face-tagging (right human-in-the-loop pattern but a walled-garden product you'd never run); the three remaining finds each attack a specific aspect from a different layer \u2014 embedding backbone, precision filtering, and classification method \u2014 and all execute on your local, BYO-key stack.",
+      "_backend": "tavily"
+    },
+    "exa": {
+      "finds": [
+        {
+          "name": "AI Triage (stonefullstm/ai-email-triage)",
+          "url": "https://github.com/stonefullstm/ai-email-triage",
+          "what_it_is": "Open-source email classifier that runs a cascading pipeline \u2014 hash cache, then heuristics, then embeddings, then LLM fallback \u2014 so only messages the cheap layers can't resolve ever reach a model.",
+          "different_angle": "Takes the same 'classify incoming documents with local embeddings' aspect but demotes embeddings from corpus-placement decider to one cheap tier in a cost-aware escalation ladder; the steal-able idea is the cascade, not the email domain.",
+          "why_relevant_to_profile": "Your profile names triage as the bottleneck and you already route between OpenRouter and local models \u2014 a deterministic-before-LLM cascade is the same routing discipline applied to an ingest queue, and it's self-hosted with no embedded API keys."
+        },
+        {
+          "name": "Emailibrium",
+          "url": "https://github.com/pacphi/emailibrium",
+          "what_it_is": "A vector-native, 100% local email intelligence tool that clusters, classifies, and semantically searches a whole mailbox using local embeddings and models, with no SaaS subscription.",
+          "different_angle": "Applies the 'embeddings classify incoming items against a personal corpus' aspect to a different inbound stream (mailbox instead of vault drop-folder), and treats vectors as the primary interface for an entire personal corpus rather than converting them into suggested wikilink edges.",
+          "why_relevant_to_profile": "It hits your BYO-key/local-first and 'nothing stored outside my control' lines exactly \u2014 local embeddings, no cloud, no subscription \u2014 and bulk-triages 10k+ items, which is precisely the triage-time problem you describe."
+        },
+        {
+          "name": "AI Support Routing System (Yiu-dororong)",
+          "url": "https://github.com/Yiu-dororong/AI-support-routing-system",
+          "what_it_is": "A support-ticket routing system that gates local-LLM calls behind deterministic semantic filters and hybrid vector/lexical retrieval (chromadb, sentence-transformers, llama.cpp) to minimize unnecessary generation.",
+          "different_angle": "Inverts the 'vectors as edges' aspect: embeddings decide IF and with what bounded context an LLM runs, rather than being rendered into human-readable graph links \u2014 and it swaps pure-embedding similarity for hybrid vector+lexical matching.",
+          "why_relevant_to_profile": "You run local agents and multi-model routing daily; bounded-RAG-before-generation and deterministic gates are directly portable patterns for agent-callable triage in your stack, built on the same local-inference primitives you use."
+        },
+        {
+          "name": "email-triage (lemuelflores)",
+          "url": "https://github.com/lemuelflores/email-triage",
+          "what_it_is": "Self-hosted IMAP email triage that strips PII with Microsoft Presidio before a local LLM classifies and drafts replies, with local embeddings for similarity work.",
+          "different_angle": "Same event-driven pipeline idea as the vault watcher (IMAP polling as the event source), but it inserts a privacy-transformation stage \u2014 PII redaction before embedding/classification \u2014 which the plain-text drop-folder pipeline lacks; the Vue dashboard is the part to ignore.",
+          "why_relevant_to_profile": "You process external documents through local agents and reject anything that moves your data out of your control; a sanitization gate ahead of local models is a steal-able pipeline stage for your own ingest queues, and everything here runs on local models."
+        }
+      ],
+      "sludge_check": "I discarded all five photo/media organizers (LocalLens, PicFolio, Omoide, selects, Memoria) because nothing in this profile touches media libraries \u2014 they'd only fit a generic 'privacy-first AI user' \u2014 plus amarnai, allistera/triage-app (Cloudflare means data outside your control), and ksolves-resolveai as redundant with sharper finds; the four kept each map a specific aspect through a different mechanism to a specific line in your profile.",
+      "_backend": "exa"
+    }
+  }
+}

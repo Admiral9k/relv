@@ -1,0 +1,102 @@
+{
+  "verdict": {
+    "content_summary": "A bundle of articles about TypeSafe AI (a new AI lab \u2014 not the defunct Scala/Akka 'Typesafe' in the Yahoo result, which is a name collision and pure noise) launching Jev, their first 'System One Model': a non-generative model that gives up string generation entirely and emits typed probabilistic decisions (classify, route, score, extract, branch; cardinality capped at 255) at a claimed ~100x frontier-LLM speed, trained via 'Reinforcement Learning for Calibrated Decisions.' One essay frames it as a 'code linter for knowledge work' \u2014 hand an agent access to a fast judge plus a list of failure modes, and the agent can check its own work near-instantly. Currently early access, hosted, $14M raised.",
+    "grabs": [
+      {
+        "type": "none",
+        "what": "Jev itself (the product)",
+        "why": "Early-access hosted model from a brand-new lab with no local or BYO-key story; it can't generate text, so it doesn't slot into the user's constant model rotation, and its classify/route role overlaps routing they already run via OpenRouter plus local models. It doesn't clearly beat the existing stack, so skip \u2014 but the patterns underneath are stealable."
+      },
+      {
+        "type": "aspect",
+        "what": "The agent self-lint loop: a cheap, fast, structured-output judge the agent calls to check its own work against a pre-declared list of failure modes ('linter for knowledge work')",
+        "why": "The user runs local agents for research, coding, and document processing. Wiring a small local model as a JSON-verdict QA pass (pass/fail + reasons) into those pipelines costs nothing, requires no new vendor, and directly attacks their stated bottleneck \u2014 triage of what deserves attention \u2014 by auto-flagging agent output before it lands in the vault."
+      },
+      {
+        "type": "aspect",
+        "what": "Two-tier decision architecture: full LLMs reserved for generation, high-frequency fuzzy decisions (classify/route/score) delegated to a tiny constrained-output model with capped output space",
+        "why": "Maps directly onto their multi-model routing and ingest queue. A fast local classifier emitting typed JSON (keep/skip/queue + reason code) for vault triage would cut latency and cost versus prompting a full model per routing decision, and the capped, non-generative output design eliminates hallucinated routing rationale \u2014 a reliability pattern applicable with models they already run locally."
+      }
+    ],
+    "aspects": [
+      "Linter for knowledge work: a fast judge model as an automated QA pass over agent or writing output",
+      "System One/System Two split: tiny non-generative model for high-frequency fuzzy decisions, full LLM reserved for generation",
+      "Typed probabilistic outputs with no string generation, making classification and routing structurally hallucination-proof",
+      "Capped output cardinality as a deliberate reliability constraint on model behavior",
+      "Self-check loop: an agent querying a judge model with a pre-declared list of failure modes to avoid",
+      "Reinforcement Learning for Calibrated Decisions: training for calibrated probabilities instead of fluent text",
+      "Fuzzy decision rules as a replacement for brittle hand-written if/else branching in pipelines"
+    ],
+    "adjacency_queries": [
+      "real-time content moderation classifier API sub-second structured verdicts trust and safety",
+      "AI rubric grader instant structured feedback on student writing education",
+      "clinical triage decision support small fast model structured output healthcare intake routing"
+    ],
+    "_model": "z-ai/glm-5.3",
+    "_profile": "default",
+    "_input": "Jev by Typesafe"
+  },
+  "adjacency": {
+    "tavily": {
+      "finds": [
+        {
+          "name": "Moonbounce 'policy as code' moderation",
+          "url": "https://cryptorank.io/news/feed/b9461-moonbounce-ai-content-moderation-funding",
+          "what_it_is": "A real-time AI moderation service that enforces safety policies expressed as code, with sub-300ms decisions over 40M+ daily reviews.",
+          "different_angle": "The triaged content used fuzzy decision rules inside a personal agent pipeline; Moonbounce applies the same 'rules-as-declarative-policy instead of if/else' pattern at platform scale, showing how policy code replaces brittle branching under hard latency budgets.",
+          "why_relevant_to_profile": "The user explicitly says they 'will steal a good idea from anywhere' and rejects hand-written branching in pipelines; 'policy as code' is a portable pattern for their multi-model routing and ingest queues, even though the hosted service itself violates their local-first rule \u2014 the pattern, not the product, is the find."
+        },
+        {
+          "name": "CoGrader rubric-scored feedback",
+          "url": "https://cograder.com/ai-grading-feedback",
+          "what_it_is": "An AI grading tool that scores each rubric criterion, quotes evidence from the source text, and outputs one specific next action, with human approval before release.",
+          "different_angle": "Instead of the triaged content's self-check loop where an agent queries a judge about its own failure modes, CoGrader runs a judge model against a pre-declared external rubric with forced evidence citations \u2014 a structural way to make judge output auditable rather than vibes-based.",
+          "why_relevant_to_profile": "The user runs a QA-pass pattern over agent/writing output and values agent-native, structured outputs; the 'quote evidence per criterion + one concrete next move' output contract is a schema they could lift directly for their own agent-output linter and document QA passes."
+        },
+        {
+          "name": "Clearstep clinical intake & triage flows",
+          "url": "https://clearstep.health/blog/the-next-phase-of-healthcare-workflow-automation-intake-triage-and-clinical-decision-support",
+          "what_it_is": "Healthcare workflow automation that structures free-form patient input into chart-ready formats and surfaces acuity signals for routing and escalation decisions.",
+          "different_angle": "The triaged content used a tiny non-generative model for high-frequency routing in an agent stack; Clearstep shows the same System One/System Two split in a safety-critical domain \u2014 cheap structured classification decides routing, humans/expensive reasoning reserved for escalation only.",
+          "why_relevant_to_profile": "The user routes between models constantly (OpenRouter + locals) and cares about structured, schema'd JSON output over generated strings; a domain where fuzzy structured triage gates escalation is a strong reference design for their own model-routing tier."
+        }
+      ],
+      "sludge_check": "I discarded the generic moderation API comparisons, ActiveFence trust-and-safety SaaS, and K-12 essay-grading tools (Brisk, Flint, Edutopia) because they are hosted, UI-first, or only relevant to generic 'AI users'; the three kept finds are hosted products the user would never adopt, but each demonstrates a stealable pattern \u2014 policy-as-code, evidence-cited rubric judging, and two-tier triage \u2014 that maps directly onto their stated routing, QA, and ingest pipeline.",
+      "_backend": "tavily"
+    },
+    "exa": {
+      "finds": [
+        {
+          "name": "Mistral Classifiers API",
+          "url": "https://docs.mistral.ai/api/endpoint/classifiers",
+          "what_it_is": "A BYO-key API exposing a small non-generative moderation/classification model that returns typed category labels with no free-text generation.",
+          "different_angle": "Uses the 'typed probabilistic outputs / capped cardinality' aspect as a production cloud endpoint: instead of a local judge model in your agent loop, it's a cheap external classifier you can call from OpenRouter-adjacent routing code for pre-generation safety gates and routing decisions.",
+          "why_relevant_to_profile": "It's BYO-key, curl-first, JSON with documented schema \u2014 exactly the composition style you run. The mistral-moderation model is a concrete example of a System One model you could slot into your multi-model routing as a fast non-generative gate before spending tokens on a full LLM."
+        },
+        {
+          "name": "smolified-clinical-symptom-router (Smolify DSLM)",
+          "url": "https://huggingface.co/smolify/smolified-clinical-symptom-router",
+          "what_it_is": "A 270M-parameter, 4-bit-quantized domain-specific model distilled from a reasoning model, built to route/classify on edge hardware or low-VRAM environments.",
+          "different_angle": "Rather than a fast judge model as a QA linter over output, this flips the aspect: a tiny distilled model as the System One router that makes high-frequency fuzzy triage decisions itself, with the big model never involved unless escalated.",
+          "why_relevant_to_profile": "Local-first, low-VRAM, quantized, open on Hugging Face \u2014 it fits your local-agent stack and your 'tiny model for fuzzy decisions, full LLM reserved' interest. Even if the clinical domain isn't yours, the Smolify distillation pattern is a stealable idea for distilling your own routing decisions into a micro-model."
+        },
+        {
+          "name": "triageiq (bass990)",
+          "url": "https://github.com/bass990/triageiq",
+          "what_it_is": "A five-agent triage decision-support pipeline on GitHub that runs cheap specialists in parallel on Claude Haiku with a Sonnet coordinator, validated by a 630-call eval that compared it against a single-model baseline.",
+          "different_angle": "Uses the 'self-check loop / tiered routing' aspect from the evaluation side: instead of trusting a judge model as a QA pass, it measures whether the tiered cheap-specialist architecture actually beats a single big model \u2014 and reports the pipeline losing by 20pp on some dimensions.",
+          "why_relevant_to_profile": "You're bottlenecked on triage and 'will steal a good idea from anywhere.' This is an open, eval-first pattern for cheap-model routing with honest negative results \u2014 directly reusable as a template for evaluating your own Haiku-class vs. full-model agent splits, and it's git-cloneable, not a SaaS."
+        },
+        {
+          "name": "ai.moderate (2s.io)",
+          "url": "https://2s.io/ai/moderate",
+          "what_it_is": "A keyless, pay-per-call HTTP endpoint for agents that returns per-category booleans plus 0..1 severity scores for arbitrary text \u2014 no signup, no UI.",
+          "different_angle": "Uses the 'fuzzy decision rules replacing brittle if/else' aspect as an externalized microservice: your agent POSTs text and gets a fixed-schema categorical verdict it can branch on, instead of you hand-writing threshold rules in your pipeline.",
+          "why_relevant_to_profile": "It's agent-native by design (no login, no dashboard, plain JSON out) \u2014 the exact 'hands my agent a file it can absorb' shape you value. The fixed per-category boolean + score schema is a good reference design for structurally hallucination-proof output contracts in your own tooling, even if you end up self-hosting the pattern."
+        }
+      ],
+      "sludge_check": "I discarded all the teacher-facing essay graders (Rubric AI, EasyClass, Clasa, EnlightenAI, LearnWise \u2014 UI-first, login-walled, subscription SaaS aimed at K-12 grading, contradicting the profile's rejections) and getstream moderation (platform dashboard product); the four kept finds are each BYO-key, curl-able, or open-source and map directly onto the user's routing/judge/local-agent architecture rather than generic AI use.",
+      "_backend": "exa"
+    }
+  }
+}
