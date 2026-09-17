@@ -43,6 +43,10 @@ Gate #3 was originally "long-form article → zero finds." That premise was wron
 - The degrade path's `reason` is a fixed string; no per-query failure detail is exposed beyond stderr. Fine for v1.1; a v1.2 candidate if real-world backends flake often.
 - v1.1 was verified on Windows locally; the VPS box has the same code but the suite was only run there pre-completion (33 passed, 1 failed at the time — that failure is the test-bug fixed above).
 
+## Post-audit round (2026-09-17, after both-family spot-audit)
+
+Both audits (llc GLM via Bot Chat + DeepSeek-v4 subagent) converged on the X-notice MAJOR; fixed in `4485fcc` (notice gated on `not direct_ok`, lie-pinning test replaced with two truthful-path tests). Second round, committed `e9a68fa`: emit_md + render_stdout now carry the degrade reason / degradation notes / flagged URLs (a degraded run no longer looks clean in emitted markdown); empty-adjacency-queries gets its own truthful message + test; `_tavily_available` docstring honest about scope. Final: **41 tests passed**, audit verdicts **publishable-with-fixes** with all blockers resolved. Fable's adapter `r.text` note is pre-existing (parked as v1.2 #11). Process note: the llc Bot Chat audit committed its own fix (`4485fcc`) despite a read-only brief — content verified correct and kept; constraint violation recorded for the llc lane.
+
 ## Fast-follow (v1.2 lane, untouched per brief)
 
 init as argparse subcommand; YAML error handling; key guards; error sanitization; Exa-default-adjacency onboarding note; test-gap fills; xAI backend for X-URLs; `--emit-dir`; tagged releases. Plus new: per-skill usage logs (dreaming-loop candidate from the skillbox review, parked).
