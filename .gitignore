@@ -24,3 +24,7 @@ Thumbs.db
 
 # internal briefs — never commit
 GOAL-BRIEF-VPS.md
+goal-brief.md
+
+# relv run output
+relv-emissions/
