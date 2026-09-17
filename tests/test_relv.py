@@ -485,3 +485,48 @@ def test_pipeline_degrades_when_no_queries_produced(cfg, monkeypatch, tmp_path, 
     assert rc == 0
     assert out["adjacency"]["reason"] == "adjacency unavailable: verdict produced no queries"
     assert "no adjacency queries" in " ".join(out["_meta"]["degradation_notes"])
+
+# ---------- error sanitization (PyPI-facing: provider bodies must not leak) ----------
+
+def test_adapter_error_sanitized(monkeypatch):
+    """Transient provider errors carry status code only — never response bodies."""
+    import relv.adapter as am
+
+    class FakeResp:
+        status_code = 429
+        text = "SECRET-ECHO sk-or-v1-abc123 should-not-appear"
+        def raise_for_status(self):
+            pass
+    class FakeClient:
+        def post(self, *a, **k):
+            return FakeResp()
+    monkeypatch.setattr(am, "httpx", type("H", (), {"post": staticmethod(lambda *a, **k: FakeResp()), "Timeout": am.httpx.Timeout}))
+    monkeypatch.setattr(am.time, "sleep", lambda s: None)
+    monkeypatch.setattr(am.os.environ, "get", lambda k, d=None: "sk-test" if k == "OPENROUTER_API_KEY" else d)
+
+    class FakeCfg:
+        base_url = "https://fake.example/api"
+        model = "fake/model"
+    try:
+        am.complete("sys", "user", FakeCfg())
+        assert False, "should have raised"
+    except RuntimeError as e:
+        # the contract: no provider response body / auth fragments ever surface
+        assert "SECRET-ECHO" not in str(e)
+        assert "sk-or-v1" not in str(e)
+        # and the failure is honestly announced (sanitized generic message)
+        assert "failed after 4 attempts" in str(e)
+
+# ---------- installed-entry-point regression (console script calls main() bare) ----------
+
+def test_main_with_none_argv_hits_init(monkeypatch, tmp_path):
+    """relv init via the installed console script: main() receives NO argv —
+    init must still be detected from sys.argv (regression: wheel users could
+    not run `relv init` at all; it was treated as pipeline input)."""
+    import relv.cli as climod
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr("sys.argv", ["relv", "init"])
+    rc = climod.main()  # bare call, like the console script
+    assert rc == 0
+    assert (tmp_path / "config.yaml").exists()
+    assert (tmp_path / "profile.md").exists()

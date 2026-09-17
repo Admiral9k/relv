@@ -118,6 +118,8 @@ def _load_profile(cfg: Config) -> str:
 
 
 def main(argv: list | None = None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]  # console-script entry points call main() bare
     if argv and argv[0] == "init":
         write_default_config(str(Path.cwd()))
         _write_default_profile(str(Path.cwd()))

@@ -90,11 +90,14 @@ def complete(system_prompt: str, user_payload: str, cfg: Config, model: str | No
         "temperature": 0.4,
     }
     last_err = None
+    _debug = bool(os.environ.get("RELV_DEBUG"))
     for attempt in range(1, 5):
         try:
             r = httpx.post(url, headers=headers, json=body, timeout=_TIMEOUT)
             if r.status_code in (429, 500, 502, 503, 504):
-                raise RuntimeError(f"provider status {r.status_code}: {r.text[:200]}")
+                # never surface provider response bodies in errors — they can echo
+                # request material (auth fragments, headers) back into user output
+                raise RuntimeError(f"provider status {r.status_code} (transient)")
             r.raise_for_status()
             data = r.json()
             return data["choices"][0]["message"]["content"]
@@ -105,7 +108,9 @@ def complete(system_prompt: str, user_payload: str, cfg: Config, model: str | No
             delay = random.uniform(30, 90)
             print(f"[adapter] call failed (attempt {attempt}): {e}; retrying in {delay:.0f}s", file=sys.stderr, flush=True)
             time.sleep(delay)
-    raise RuntimeError(f"adapter: model call failed after 4 attempts: {last_err}")
+    if _debug:
+        raise RuntimeError(f"adapter: model call failed after 4 attempts: {last_err}")
+    raise RuntimeError("adapter: model call failed after 4 attempts (provider unreachable or erroring; details suppressed — set RELV_DEBUG=1 to see them)")
 
 
 def structured_complete(
