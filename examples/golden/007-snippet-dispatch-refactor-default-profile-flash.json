@@ -1,0 +1,112 @@
+{
+ "verdict": {
+  "content_summary": "An engineering changelog describing a refactor of gateway/run.py, the project's largest file, decomposed into separate modules for message dispatch, streaming, RPC, and lifecycle handling. Alongside the split, workers consolidated duplicated helper functions and replaced long name-based if/elif branching chains with dispatch tables. The title notes regressions caught during review, implying worker/agent-driven edits were gated by a review pass. No product to adopt here — the value is entirely in the portable refactoring mechanics.",
+  "grabs": [
+   {
+    "type": "aspect",
+    "what": "Dispatch tables replacing name-based if/elif chains",
+    "why": "Directly portable to their multi-model router: model/provider selection as a keyed table (route name → handler) instead of branch chains. Matches their preference for structured in/out and routing-as-data they can extend by editing a table, not code."
+   },
+   {
+    "type": "aspect",
+    "what": "Concern-split decomposition of a monolithic entrypoint (dispatch / streaming / RPC / lifecycle)",
+    "why": "A concrete blueprint for their own gateway and ingest pipeline: carve the markdown-in/queues-out plumbing into narrow, independently swappable modules — consistent with their small-composable-tools-over-monolith stance."
+   },
+   {
+    "type": "aspect",
+    "what": "Review-gated refactoring where regressions are caught in a review pass",
+    "why": "Maps onto their local-agent coding workflow: let agents perform mechanical refactors, then run a cheap review step to catch regressions before landing. A safety pattern for agent-driven edits on a self-hosted stack without heavyweight CI."
+   }
+  ],
+  "aspects": [
+   "Dispatch tables: replace name-based if/elif branching with a keyed handler table — routing as data, not code",
+   "Monolith decomposition by concern: split dispatch, streaming, RPC, and lifecycle into separate modules with narrow interfaces",
+   "Helper deduplication: consolidate duplicated utility functions into a single shared module",
+   "Review-gated automated refactoring: worker/agent edits pass through a review step that catches regressions before merge"
+  ],
+  "adjacency_queries": [
+   "dispatch-table routing patterns for multi-model LLM gateways with provider fallback",
+   "splitting a monolithic agent or bot entrypoint into transport, dispatch, and lifecycle modules",
+   "review-gated or test-gated automated refactoring workflows that catch regressions in agent-written code",
+   "deduplication strategies for shared helpers across small composable CLI tools"
+  ],
+  "models": [
+   {
+    "model": "z-ai/glm-5.3-flash",
+    "verdict": "aspect",
+    "why": "Directly portable to their multi-model router: model/provider selection as a keyed table (route name → handler) instead of branch chains. Matches their preference for structured in/out and routing-as-data they can extend by editing a table, not code.; A concrete blueprint for their own gateway and ingest pipeline: carve the markdown-in/queues-out plumbing into narrow, independently swappable modules — consistent with their small-composable-tools-over-monolith stance."
+   }
+  ],
+  "confidence": null
+ },
+ "adjacency": {
+  "finds": [
+   {
+    "name": "924 Lines: What I Learned Refactoring My Own Brain",
+    "url": "https://arc0.me/blog/2026-03-12-dispatch-refactor-924-lines/",
+    "what_it_is": "First-person writeup of shrinking a live LLM dispatch engine from 1,611 to 924 lines by extracting four single-responsibility modules, performed while the system kept running.",
+    "different_angle": "Shares the exact mechanism — carving a monolithic dispatch file into message-dispatch/lifecycle-shaped modules — but as a mid-flight war story: extraction order, what broke, and the 'logic moved, not deleted' discipline, versus the changelog's after-the-fact summary.",
+    "why_relevant_to_profile": "Their agent entrypoints are the same Python-shaped problem that accretes into a giant run.py; the extraction lessons port directly into their local gateway and pipeline code.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Modular architectures for agentic AI: the 4-layer cut",
+    "url": "https://www.learnwithparam.com/blog/modular-architectures-agentic-ai-maintainable-production",
+    "what_it_is": "A repeatable pattern for splitting a 900-line main.py agent into four layers with explicit boundaries, plus the failure modes (nested if-branches, merge conflicts) that motivated the split.",
+    "different_angle": "Generalizes the changelog's one-off split into a named, reusable cut of transport/dispatch/lifecycle boundaries — pattern and checklist rather than anecdote.",
+    "why_relevant_to_profile": "Gives a mechanical boundary-drawing method they can apply to any growing script in their self-hosted stack before it hits 'nobody wants to touch it' size.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Building a Five-Layer Quality Gate for Agent-Written Code",
+    "url": "https://dev.to/kagin007/building-a-five-layer-quality-gate-for-agent-written-code-3e0k",
+    "what_it_is": "A solo developer's layered review pipeline — git worktrees, per-agent branches, PRs, stacked verification passes — for trusting code written by parallel AI agents.",
+    "different_angle": "The changelog only implies review gating ('regressions caught during review'); this specifies the mechanism from the reviewer's side: which gates catch what, and how one person gates many agent-written diffs.",
+    "why_relevant_to_profile": "They triage hard and run agent-driven edits on their own stack; a solo-scale, self-hostable gating workflow (no per-seat SaaS) is exactly how worker refactors get let in safely.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "singleflight-agents",
+    "url": "https://github.com/crithstudio-hash/singleflight-agents",
+    "what_it_is": "Zero-dependency Python library that collapses duplicate tool calls across parallel agents into one execution, with signed receipts.",
+    "different_angle": "Same elimination-of-duplication mechanism as the changelog's helper consolidation, but applied at runtime instead of at source level: coalesce identical in-flight work rather than identical code.",
+    "why_relevant_to_profile": "Fits the small-single-purpose-tool, zero-deps, BYO-key ethos, and directly cuts token/API spend in their multi-agent pipelines that re-run identical searches.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Multi-Model Routing — The AI Gateway Pattern That Cuts LLM Bills 40-70%",
+    "url": "https://akshayghalme.com/blogs/multi-model-routing-ai-gateway-pattern/",
+    "what_it_is": "Hands-on article with working code for a minimal multi-provider router, cascade/fallback patterns, a gateway comparison including OpenRouter, and ten routing anti-patterns.",
+    "different_angle": "The changelog shows how a gateway's internals are structured; this shows what the dispatch layer should decide — table-driven routing and fallback — and catalogs the name-based-branching failure modes the if/elif removal was fixing.",
+    "why_relevant_to_profile": "Their stack is literally OpenRouter plus small local models; the anti-pattern list names the smells to purge and the basic-router code is port-ready for a self-hosted setup.",
+    "url_status": "flagged"
+   }
+  ],
+  "sludge_check": "Discarded: layra4.dev/pattern/llm-routing (404, dead link); lapc506/agentic-core (archived, repo moved); the Medium quality-gates piece (member-only paywall — content gated before value, a profile reject); Socratopia chapter (republished book content funneling to a desktop app); BestHub, CheatGrid, DataAIHub, and Reintech (syndication-style aggregators, thin signal); DevOpsNess, niteagent.com, and gateway-llm.com (vendor/SEO blog takes on the same gateway topic); both callsphere.ai pages (raw .md vendor SEO content); mkkotcherla/microagent-guide and the 4-star ingridtoulotte/llm-fallback-router (near-zero-signal repos). Not sludge but deprioritized: the arXiv cluster (TDAD, SWE-Gate, TDD-Agent, TENET — alphaXiv entry is a duplicate mirror of TDD-Agent) is heavier than the need; dev.to 'release gate' opinion post too thin to include. Kept the dev.to five-layer quality gate after reading — it's a substantive solo-operator workflow, not drive-by content.",
+  "_backend": "exa",
+  "_n_raw_results": 47
+ },
+ "input": "For gateway/run.py, our biggest file, workers separated message dispatch, streaming, RPC, and lifecycle handling into modules. Elsewhere, they consolidated duplicate helpers and replaced long name-based if/elif chains with dispatch tables. Reviewers caught public names that workers had removed becau",
+ "meta": {
+  "fixture_added": "2026-09-17",
+  "source": "pasted text — Devon's test battery, 2026-09-17 (snippet from same article as 005)",
+  "profile": "default (repo-local profile.md was a verbatim copy of bundled default_profile.md at run time — verified by diff)",
+  "model": "z-ai/glm-5.3-flash",
+  "synthesis_model": "z-ai/glm-5.3-flash",
+  "depth": "standard",
+  "backends": {
+   "resolve": "tavily",
+   "adjacency": "exa"
+  },
+  "regression_role": "Healthy-path regression baseline: 5 finds at capture. Guards the success lane — fixes (esp. any query-writer or synth changes) must not starve normal-length inputs of finds.",
+  "known_result_at_capture": "adjacency.finds count = 5",
+  "flagged_urls_at_capture": [
+   "https://arc0.me/blog/2026-03-12-dispatch-refactor-924-lines/",
+   "https://www.learnwithparam.com/blog/modular-architectures-agentic-ai-maintainable-production",
+   "https://dev.to/kagin007/building-a-five-layer-quality-gate-for-agent-written-code-3e0k",
+   "https://github.com/crithstudio-hash/singleflight-agents",
+   "https://akshayghalme.com/blogs/multi-model-routing-ai-gateway-pattern/"
+  ],
+  "input_capture_note": "Input captured by relv's _meta at 300 chars (cli.py input[:300]); this fixture preserves the captured prefix, not the full paste. v1.1 item: store full input (capped) in meta."
+ }
+}

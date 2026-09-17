@@ -1,0 +1,105 @@
+{
+ "verdict": {
+  "content_summary": "Not a tool or article but a raw task directive: an imperative spec instructing an AI assistant or dev team to refactor a codebase until LOC drops at least 30%, delivered as either one monolithic pull request or a staged PR series. Its substance is prompt-as-spec — a hard, measurable objective (a deletion quota) paired with a structured deliverable format (PRs) that routes agent output into a normal review workflow. The value is as a reusable template for driving coding agents, not as software to adopt. It's thin on its own but mechanism-dense for anyone already running agents against their own repos.",
+  "grabs": [
+   {
+    "type": "aspect",
+    "what": "Quantified simplification quota — hand a coding agent a hard, checkable target (LOC −30%) instead of a vague 'clean this up'",
+    "why": "You run local AI agents for coding on your own stack; a deletion quota flips the agent from code generator to pruner, and a numeric target is trivially verifiable in a pipeline (wc -l before/after) before anything touches main. Cheap to port, no new dependency."
+   },
+   {
+    "type": "aspect",
+    "what": "PR-shaped agent deliverable — spec the agent's output as a pull request or PR series rather than chat prose",
+    "why": "Directly implements your 'structured in/out — prose is for humans, data is for machines' rule: the agent emits reviewable diffs your existing git workflow already consumes. Works with self-hosted git and offline models alike; nothing to buy, just a convention to adopt in your agent prompts."
+   }
+  ],
+  "aspects": [
+   "Quantified deletion quota: define agent work as a measurable reduction target (e.g., −30% LOC) so success is mechanically checkable and the model biases toward removal over addition",
+   "Reviewable-artifact delivery: constrain agent output to the artifact your review pipeline already consumes (PR/PR series/diff) instead of freeform prose",
+   "Outcome-over-shape spec: state the required end state and let the executor choose decomposition granularity (monolithic vs. staged batches)"
+  ],
+  "adjacency_queries": [
+   "Prompt templates that give coding agents a measurable success metric like line, token, or dependency reduction instead of vague cleanup goals",
+   "Self-hosted tools that turn LLM output directly into git commits, patches, or PRs rather than chat responses",
+   "Document-processing pipeline patterns where an agent must compress input to a hard output budget (e.g., markdown to fixed-size structured summaries)",
+   "Task spec formats that define only the outcome and leave batch decomposition strategy to the executing agent"
+  ],
+  "models": [
+   {
+    "model": "z-ai/glm-5.3-flash",
+    "verdict": "aspect",
+    "why": "You run local AI agents for coding on your own stack; a deletion quota flips the agent from code generator to pruner, and a numeric target is trivially verifiable in a pipeline (wc -l before/after) before anything touches main. Cheap to port, no new dependency.; Directly implements your 'structured in/out — prose is for humans, data is for machines' rule: the agent emits reviewable diffs your existing git workflow already consumes. Works with self-hosted git and offline models alike; nothing to buy, just a convention to adopt in your agent prompts."
+   }
+  ],
+  "confidence": null
+ },
+ "adjacency": {
+  "finds": [
+   {
+    "name": "prompt-compress — autoresearch compression loop (CLAUDE.md)",
+    "url": "https://github.com/ruairidhwm/prompt-compress/blob/main/CLAUDE.md",
+    "what_it_is": "A CLAUDE.md spec that drives an autonomous loop rewriting production system prompts to the shortest version that still passes a scoring gate: >=0.92 average semantic similarity vs baseline outputs, >=0.85 per-input floor. Token count is the minimized objective; a scoring script is the referee.",
+    "different_angle": "Same mechanism as the triaged directive — a hard numeric reduction target paired with an acceptance constraint — but transplanted from code to prompts, and with an open-ended minimize quota instead of a fixed 30%, gated by behavior preservation rather than review.",
+    "why_relevant_to_profile": "You run local agents driven by plain-text specs; this is a copy-pasteable markdown file (no product, no account) demonstrating how to port the deletion-quota pattern to any domain that has a scoring script — directly applicable to your agent configs and ingest pipeline.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "reducing-entropy agent skill",
+    "url": "https://agentpedia.codes/agent-skills/architecture/reducing-entropy",
+    "what_it_is": "MIT-licensed installable skill (npx skills add softaworks/agent-toolkit) for Claude Code, Cursor, Codex, Copilot and Antigravity that acts as an architectural gatekeeper: every change is evaluated by comparing total line count, prioritizing codebase minimization over incremental growth.",
+    "different_angle": "Turns the triaged item's one-shot deletion quota into a persistent rule enforced on every diff — the metric lives in the agent's standing instructions as a skill rather than in a per-task prompt.",
+    "why_relevant_to_profile": "You run coding agents against your own repos and value small composable tools; a cross-tool skill file is plain-text, portable between your agents, and installs the LOC-quota mechanism with no new service or account.",
+    "url_status": "ok"
+   },
+   {
+    "name": "METR Task Standard",
+    "url": "https://metr.org/blog/2024-02-29-metr-task-standard",
+    "what_it_is": "An open (MIT, 187-star) standard from METR for defining agent tasks: each task is a self-contained environment with an outcome specification and programmatic scoring, so success is machine-checkable independently of how the agent gets there.",
+    "different_angle": "Same outcome-only-spec mechanism as the triaged directive — define the result, leave decomposition strategy to the executor — but formalized as a reproducible standard with verifiable scoring instead of a prose imperative and a eyeball-checked PR.",
+    "why_relevant_to_profile": "Gives you a rigorous, git-versionable template for wrapping your own agent jobs (refactors, document processing) in acceptance criteria the machine can check — spec-as-data rather than spec-as-prose.",
+    "original_url": "https://github.com/METR/task-standard?tab=readme-ov-file",
+    "url_status": "re_resolved"
+   },
+   {
+    "name": "autogit",
+    "url": "https://github.com/davidondrej/autogit",
+    "what_it_is": "MIT-licensed CLI (62 stars) that hooks the end of an AI coding agent's turn and automatically stages, commits, and pushes, with a user-selected safety level.",
+    "different_angle": "Attacks the other half of the triaged mechanism — the structured deliverable. Instead of instructing the agent to produce PRs, it moves the routing into infrastructure: agent output lands in the normal git workflow by default, with the safety setting standing in for review control.",
+    "why_relevant_to_profile": "You live in the terminal and run agents on local repos; this is a small single-purpose tool that composes with any agent and keeps your history in plain git instead of a vendor's session cloud.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "mdcompress",
+    "url": "https://github.com/dhruv1794/mdcompress",
+    "what_it_is": "A small Go library + CLI (MIT) that strips fluff from markdown files and emits a token-optimized version, built to cut LLM input costs on docs-heavy contexts.",
+    "different_angle": "The deletion quota implemented deterministically — no model call, no prompt: pure code enforces the reduction on markdown input, the way the triaged spec enforces it on code via an agent. The quota as a pipeline stage rather than a task instruction.",
+    "why_relevant_to_profile": "Your ingest pipeline is markdown-in/structured-out and you prefer cheap single-purpose composable tools; this slots directly in front of your local models as a pre-compression stage with no API dependency.",
+    "url_status": "flagged"
+   }
+  ],
+  "sludge_check": "Discarded aitoolsguidebook.com (SEO content farm: 'AI Productivity Guide Team' byline, AI-assisted drafts, localized listicle pages), the DeepWiki auto-generated wiki page, newprompt.net (prompt-SEO resource site), and the RepoDepot aggregator mirror. Skipped 0-star forks and duplicates (zxmaster/llm-git fork, msaadsbr/CommitLM fork, duplicate daidi/git-ai checkouts, low-traction pypi llm-git-commits), template-marketplace dumps (davila7/claude-code-templates, nidhinjs/prompt-master via DeepWiki), a self-overwriting AGENTS.md gist with no acceptance metric, liuaibin001/goal-prompt-builder (0-star fork, YouTube homepage), shaurya-afk/nascent (0-star, hosted homepage), the RAGIX/KOAS doc (reads AI-generated), and 'production-ready' sumarizer-agent (0-star, single contributor). Academic papers (CMDP summarization, dual-agent RL, EMNLP structured representations) set aside as less immediately portable than working code for this profile.",
+  "_backend": "exa",
+  "_n_raw_results": 48
+ },
+ "input": "I want a massive simplification set of PRs. or a single monolithic PR. I want LOC to drop dramatically. Minimum 30% overall. I want god files broken up. I want simplification across the board. I want unification of helpers and methods that can be reused. I want less if-if-if-if-if-if-else routing. I",
+ "meta": {
+  "fixture_added": "2026-09-17",
+  "source": "pasted text — Devon's test battery, 2026-09-17 (snippet from same article as 005)",
+  "profile": "default (repo-local profile.md was a verbatim copy of bundled default_profile.md at run time — verified by diff)",
+  "model": "z-ai/glm-5.3-flash",
+  "synthesis_model": "z-ai/glm-5.3-flash",
+  "depth": "standard",
+  "backends": {
+   "resolve": "tavily",
+   "adjacency": "exa"
+  },
+  "regression_role": "Healthy-path regression baseline: 5 finds at capture. Guards the success lane — fixes (esp. any query-writer or synth changes) must not starve normal-length inputs of finds.",
+  "known_result_at_capture": "adjacency.finds count = 5",
+  "flagged_urls_at_capture": [
+   "https://github.com/ruairidhwm/prompt-compress/blob/main/CLAUDE.md",
+   "https://github.com/davidondrej/autogit",
+   "https://github.com/dhruv1794/mdcompress"
+  ],
+  "input_capture_note": "Input captured by relv's _meta at 300 chars (cli.py input[:300]); this fixture preserves the captured prefix, not the full paste. v1.1 item: store full input (capped) in meta."
+ }
+}

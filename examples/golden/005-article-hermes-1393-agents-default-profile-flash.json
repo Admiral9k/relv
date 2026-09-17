@@ -1,0 +1,113 @@
+{
+ "verdict": {
+  "content_summary": "A Nous Research engineering postmortem: the Hermes Agent open-source repo (~1.06M lines of non-test Python) was refactored by an orchestrated swarm of 1,393 subagents (218 concurrent, 3 delegation levels) running in a single Python process on an i7/64GB desktop, cutting non-test code 34.4% in ~19 active hours for ~$25k in inference. The orchestrator partitioned the codebase into 36 non-overlapping groups, gave workers briefs in isolated git worktrees, verified via byte-for-byte CLI --help diffs and per-step commits, and recovered from a mid-run token expiry via a handoff session built on saved commits. Key compounding mechanism: the agent auto-writes and revises markdown 'skills' (procedures, scripts, lessons) that persist across sessions and can be handed to other engineers. The writeup is unusually honest about downsides — review caught regressions tests missed (removed public plugin names, ~65 altered suppress() sites), median lookup tokens got worse despite averages improving, six files remain over 5k lines — and documents resource lessons like 30 duplicate Pyright servers eating 8.7GB until consolidated to one shared server.",
+  "grabs": [
+   {
+    "type": "aspect",
+    "what": "Agent-authored markdown skill files as persistent memory — the agent records reusable procedures into readable markdown + scripts, revises them when corrected, and the files transfer to other agents/engineers",
+    "why": "This is exactly the profile's plain-text-first stack: lessons live as markdown the user can read, diff, version, and drop into their own agent loop without adopting Hermes. The /goal standing-objective prompt pairs with it as the cheap trick that keeps a long run from stalling."
+   },
+   {
+    "type": "aspect",
+    "what": "Worktree-partitioned subagent swarms — split the target into non-overlapping file groups, brief each worker with scope + preserved interfaces + required checks, run in git worktrees, allow hierarchical delegation",
+    "why": "Directly portable to the user's local agents: no new infra, just git worktrees and structured briefs (structured in/out, data for machines). The specific failure data — resource exhaustion at 200+ concurrent workers, shared language-server fix, leaked transports — is free operational knowledge for anyone running multi-agent fan-out on a single desktop."
+   },
+   {
+    "type": "aspect",
+    "what": "Cheap structural verification harness — byte-for-byte CLI --help comparisons, frozen baseline for triaging failing checks, commit after each verified step, and a dedicated check flagging removed public names",
+    "why": "Fits the small-tool ethos: these are single-purpose scripts, not a test framework purchase. The 'review caught what tests missed' list (deleted public plugin API, rewritten suppress() at 65 sites) is a concrete checklist for the user's own pipeline refactors, where behavior-preserving verification matters more than coverage percentages."
+   },
+   {
+    "type": "aspect",
+    "what": "Honest post-hoc cost/benefit accounting including regressions — reporting where the refactor made things worse (median lookup tokens up, slower entry-point imports) alongside the wins",
+    "why": "Matches the user's triage-hard, cheap-beats-fancy discipline: this is the measurement pattern to steal for evaluating their own automated changes, forcing claims like 'it got smaller' to survive 'but did it get slower/denser' scrutiny."
+   }
+  ],
+  "aspects": [
+   "Agent-authored markdown skills: lessons persisted as editable markdown + scripts, revised on correction, shareable across agents and engineers",
+   "Non-overlapping task partitioning + git worktrees + structured briefs as a conflict-free substrate for parallel agent work",
+   "Standing-objective prompting (/goal): a persistent objective that converts a stop-prone agent into a long-running one",
+   "Behavior-preservation verification via byte-for-byte output diffs, frozen baselines, commit-per-verified-step, and public-API-removal flags",
+   "Shared resource pooling for parallel tooling (one language server across worktrees) instead of per-worker spawns",
+   "Crash handoff pattern: a separate session diagnoses the failure and packages resume state from saved commits + briefs",
+   "Refactor-by-mechanical-replacement: if/elif chains to dispatch tables, monolith files split by concern to shrink per-lookup context cost"
+  ],
+  "adjacency_queries": [
+   "agents that persist learned lessons as editable markdown memory files across sessions",
+   "parallel code transformation using git worktrees with non-overlapping file partitions and structured task briefs",
+   "regression detection by diffing CLI output byte-for-byte against a frozen baseline during refactoring",
+   "sharing a single language server or tool process across many concurrent worktrees to control memory use"
+  ],
+  "models": [
+   {
+    "model": "z-ai/glm-5.3-flash",
+    "verdict": "aspect",
+    "why": "This is exactly the profile's plain-text-first stack: lessons live as markdown the user can read, diff, version, and drop into their own agent loop without adopting Hermes. The /goal standing-objective prompt pairs with it as the cheap trick that keeps a long run from stalling.; Directly portable to the user's local agents: no new infra, just git worktrees and structured briefs (structured in/out, data for machines). The specific failure data — resource exhaustion at 200+ concurrent workers, shared language-server fix, leaked transports — is free operational knowledge for anyone running multi-agent fan-out on a single desktop."
+   }
+  ],
+  "confidence": null
+ },
+ "adjacency": {
+  "finds": [
+   {
+    "name": "memex — Zettelkasten persistent memory for AI coding agents",
+    "url": "https://github.com/iamtouchskyer/memex/blob/e6bcc26423490628162bbe03226037a15c9eeb6d/README.md",
+    "what_it_is": "Open-source (MIT, TypeScript) persistent-memory layer for coding agents: each finished task is distilled into atomic markdown knowledge cards with [[bidirectional links]], synced via git, recalled next session. No vector DB; works with any MCP client (Claude Code, Cursor, Codex, etc.).",
+    "different_angle": "Same mechanism as the Hermes auto-written markdown skills — procedures and lessons persisted as plain files — but externalized into a standalone, agent-agnostic memory store with Zettelkasten linking, instead of skills bound to one orchestrator's internal state.",
+    "why_relevant_to_profile": "Markdown + git sync, no vector DB, no cloud, BYO-agent via MCP: exactly the plain-text-first, self-hosted shape of your ingest pipeline. Your local agents' learned lessons become markdown you can grep and diff like everything else.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Atomic Knowledge — markdown work-memory protocol",
+    "url": "https://atomicapp.ai/concepts/atoms",
+    "what_it_is": "MIT-licensed, platform-neutral protocol (Python/Shell) for agent-maintained work memory in markdown: maintained knowledge, candidate notes, evals, and an example knowledge base — a spec you implement, not a service you install.",
+    "different_angle": "Strips the postmortem's skills mechanism down to a portable protocol and adds what Nous lacked: evals plus a candidate→maintained review flow, so lessons get quality-controlled before they compound across sessions.",
+    "why_relevant_to_profile": "You want mechanisms to port, not products to buy — this is a protocol you can fold into your existing markdown queues, with structured in/out (candidate notes in, curated KB out) matching your pipeline style.",
+    "original_url": "https://github.com/nimo1987/atomic-knowledge",
+    "url_status": "re_resolved"
+   },
+   {
+    "name": "treehouse — worktree management without the ceremony",
+    "url": "https://github.com/kunchenguid/treehouse",
+    "what_it_is": "Popular (1.5k+ stars, MIT, Go) CLI automating the git worktree lifecycle — create, switch, clean up isolated worktrees — so parallel agents each get their own checkout without hand-rolled plumbing.",
+    "different_angle": "Nous built bespoke worktree isolation inside a 1,393-agent orchestrator; treehouse is the same isolation mechanism as a standalone, agent-agnostic tool — it handles worktree mechanics and leaves partitioning and task briefs to you.",
+    "why_relevant_to_profile": "You run multiple local agents; this gives each a sandboxed checkout from one repo, zero per-seat anything. A single-purpose Go binary you can compose into your own orchestration scripts.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "difftest — differential testing CLI",
+    "url": "https://github.com/nalediym/difftest",
+    "what_it_is": "Zero-config, language-agnostic CLI (MIT) that runs two programs on the same inputs and diffs their outputs — differential testing aimed at AI rewrites and migrations, CI-friendly.",
+    "different_angle": "Generalizes the postmortem's byte-for-byte `--help` diff from an ad-hoc script inside one refactor into a reusable primitive: point it at any two binaries/versions and get output equivalence as a pass/fail gate.",
+    "why_relevant_to_profile": "A small single-purpose tool that does one thing well and slots into your pipelines as a structured check — how you'd gate agent-driven refactors of your own tools, given the postmortem showed review catching regressions tests missed.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "drey — one shared language server per workspace",
+    "url": "https://github.com/mario/drey",
+    "what_it_is": "Apache-2.0 proxy that runs one language server per workspace (pyright, rust-analyzer, gopls, tsserver, clangd, jdtls…) shared by every editor and agent session, instead of one server per client.",
+    "different_angle": "Turns the postmortem's reactive resource lesson (30 duplicate Pyright servers eating 8.7GB, consolidated to one) into standing infrastructure: multiplexing happens automatically at the LSP proxy layer rather than being discovered mid-run.",
+    "why_relevant_to_profile": "You run many concurrent local agents on one desktop; this is the cheap-beats-fancy fix — one index per workspace, no cloud, no accounts — that keeps your box from drowning when you scale up parallel agent runs.",
+    "url_status": "flagged"
+   }
+  ],
+  "sludge_check": "Discarded: two memex forks (xuri, halton) and a near-duplicate cluster of tiny agent-memory repos (INOSX 1★, Defiladeboarfish90 2★ with a contradictory faiss topic, SnowWarri0r 0★, atharvavdeo Obsidian variant) — same mechanism, no differentiation; a bare docs commit (framersai/agentos) and a closed issue thread (daintreehq) as non-findings; an archived repo (tuulbelt/snapshot-comparison); product-plug blog posts (codeongrass.com pushing 'Grass', understandingdata.com '3x throughput' listicle, jsmanifest, a zenn article authored by Claude Code, a dev.to mirror of heycc.cn); generic reference docs (vasilyu1983). Consolidated same-mechanism overlaps: lspmux/serena-shared-bridge → drey (clearest pyright+agents framing); swarm-git/git-parsec/worktree skills → treehouse (battle-tested, MIT, no Jira coupling; the borghei skill also carries a Commons Clause restriction); RegressProof/regressGuard/agentdelta/agentprdiff/tidemark/Selfsame/agentdiff/promptdiff/repro-evidence-kit → difftest (purest zero-config port of the byte-for-byte baseline-diff mechanism).",
+  "_backend": "exa",
+  "_n_raw_results": 46
+ },
+ "input": "---\ntitle: \"Refactoring Hermes with 1,393 agents\"\nsource: \"hidden for now\"\nauthor:\n  - \"[[Teknium]]\"\npublished: 2026-09-15\ncreated: 2026-09-17\ndescription: \"Hermes Agent refactored its own codebase: 1,393 subagents over about nineteen active hours cut non-test Python by 34.4%, for roughly $19,300 in model spend against a $150k-$1.8M estimate for doing it by hand.\"\ntags:\n  - \"clippings\"\n---\nOr: How to get $1.8M of value from $19K of tokens\n\n---\n\n![Grainy blue-toned illustration of a figure reaching toward a large cratered sphere, a sweeping wing-like form behind it](https://nousresearch.com/refactoring-hermes-with-1393-agents/banner.webp)\n\nGrainy blue-toned illustration of a figure reaching toward a large cratered sphere, a sweeping wing-like form behind it\n\n*TLDR: Hermes Agent autonomously plowed through about a million lines of unglamorous cleanup, freeing up Teknium and team to continue pushing features to users.*\n\nWe had long been putting off a thorough cleanup of Hermes, our open-source agent, because it meant taking engineers away from features and bug fixes. By September, the repository had more than a million lines of non-test Python. `gateway/run.py` alone was 34,847 lines long. I wanted smaller files, shared helpers, and fewer enormous functions to work through when something broke.\n\nOn September 2nd, I asked my regular Hermes agent to do the cleanup. The main run lasted about nineteen active hours and dispatched 1,393 subagents, reaching 218 running at once. After a restart, a continuation session, and two rounds of community review and fixes, I merged [the PR](https://github.com/NousResearch/hermes-agent/pull/102117) on September 4th. It reduced non-test Python source by 34.4%.\n\nThe estimated model cost was about $19,300 for the main run, or roughly $25k including follow-up sessions. That excludes human review time. Our rough staffing estimate for doing the work manually was $150k-$1.8M for a small team working for two months to two years. We couldn't justify scheduling it alongside everything else we needed to ship.\n\nI use Hermes Agent everyday to develop Hermes Agent. As we fix bugs and review changes together, Hermes records what worked and updates its skills when I correct its approach or it finds the right pathway to solve new problems. By the time I asked for this refactor, it had learned my preferred procedures and standards and could apply them to a much larger job:\n\n> *I want a massive simplification set of PRs. or a single monolithic PR. I want LOC to drop dramatically. Minimum 30% overall. I want god files broken up. I want simplification across the board. I want unification of helpers and methods that can be reused. I want less if-if-if-if-if-if-else routing. I want code legibility up. I want interpretability of the codebase and how things connect to each other up. I want elegance. I want superfluous excess bloat code cleaned up and removed. I want it all done fully. No excuses. No waiting for my decisions. Get it all done, and present me a PR or set of PRs when done.*\n\nI used `/goal`, which gives Hermes a standing objective and prompts it to continue when it would otherwise stop.\n\n## Self-improvement (for real)\n\nMy `hermes-agent-dev` skill grew out of my everyday work on the repository. When we worked out a procedure or I corrected a mistake, Hermes (automatically) noticed this and saved the reusable lesson. Over time, it accumulated instructions about how to prepare a PR, which shortcuts to avoid, and how to verify a change. [Skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills) are readable Markdown documents, with reference files and scripts where needed, that the agent can load for later tasks. Hermes writes and revises them as it works.\n\nThe current version of `hermes-agent-dev` includes this instruction for a failing check:\n\n> *repro on `origin/main` HEAD in clean env to check whether it's pre-existing*\n\nIn other words, run the failing test on unchanged code to help determine whether your change caused it. Hermes used the same kind of comparison during the refactor: it established a frozen baseline and checked failures against it as it integrated the workers' changes.\n\nI send that skill around to all our engineers. They can install it in their own Hermes setups, so their agents can use procedures and corrections developed in my sessions. They get the benefit of that work without having to repeat the sessions themselves, and their agents can adapt the skill as they use it.\n\n## Running the refactor\n\nThe orchestrator measured the codebase and divided it into 36 non-overlapping groups. It used my objective and the accumulated guidance to prepare written assignments, without my having to brief each worker.\n\nWorkers used git worktrees, separate checkouts where they could make changes without overwriting one another's files. Their briefs identified the code to simplify, the interfaces to preserve, and the checks required before committing.\n\nSome workers delegated parts of their assignments again. The tree reached three levels below the original agent, which handled coordination rather than editing source files: it wrote assignments and scripts, read worker reports, integrated branches, and ran checks.\n\nHermes coordinated the agents in one Python process on an i7 desktop with 64 GB of RAM. Their tools ran in local subprocesses, while Claude Fable 5.1 handled inference remotely.\n\nThe agent checked specific interfaces against the original code. A tool's JSON schema had to remain identical, for example, and a CLI command's `--help` output could be compared byte for byte. Workers also had to commit after each verified step.\n\nAbout fifty minutes in, the provider's authentication token expired and the resulting failures killed the run. The workers' commits and briefs survived. I used a separate Hermes session to diagnose the failure and prepare a handoff, then supplied it to the resumed session. Hermes sent workers back to inspect their saved changes, repair unfinished extractions, and continue.\n\nFor `gateway/run.py`, our biggest file, workers separated message dispatch, streaming, RPC, and lifecycle handling into modules. Elsewhere, they consolidated duplicate helpers and replaced long name-based `if/elif` chains with dispatch tables.\n\nReviewers caught public names that workers had removed because they had no callers inside the repository, even though external plugins could import them. An automated rewrite of `suppress()` calls also changed exception handling at roughly 65 sites. These were real regressions the existing tests had missed. We fixed them before merge, over two rounds of community review. [Further fixes followed after merge](https://github.com/NousResearch/hermes-agent/issues/103563).\n\n## Was the code easier to work with?\n\nThe PR's before-and-after measurements showed how much the code had changed:\n\n| Metric | Before | After |\n| --- | --- | --- |\n| Non-test Python lines (all directories) | 1,063,826 | 698,363 |\n| Files over 5,000 lines | 37 | 6 |\n| Functions over 300 lines | 192 | 2 |\n| Longest `if/elif` chain | 92 branches | 9 |\n| `gateway/run.py` | 34,847 lines | 5,512 |\n\nDoes code that's easier for humans to navigate also work better for agents? Splitting a function makes its definition shorter, but may require the agent to follow calls into other files. We tested one part of that question by simulating lookups of the same 4,000 symbols in both versions. Each lookup searched for the definition, read a 60-line window, and continued in 2,000-line windows only if the definition extended beyond it.\n\nThe average tokens returned per lookup fell from 2,218 to 993. Lookups requiring another read window fell from 628 to 184. Several functions that previously required reading tens of thousands of tokens could now be read in a few thousand.\n\nThese are lookup costs; we didn't measure agents completing engineering tasks. The median lookup actually returned more tokens: with fewer comments and docstrings, a fixed window of lines contained denser code. The average fell because the very large definitions got much smaller.\n\nThere were other costs. Splitting files increased the module count and import dependencies, and some entry points took longer to import. The refactor made individual pieces easier to read without resolving all the coupling between them. Six files still exceeded 5,000 lines.\n\nThe [benchmark data](https://gist.github.com/teknium1/a7adb797243d6355c76abc9cae88838b) includes the lookup results and the dependency and runtime measurements.\n\n## Lessons learned\n\nRunning hundreds of workers exposed opportunities for improvement in Hermes itself. For example, workers in separate worktrees had started roughly thirty copies of Pyright, a Python language server, consuming about 8.7 GB. A follow-up change let the worktrees share one server, with a live check that diagnostics still arrived from each. We also reduced duplicated HTTP transports and fixed references that kept finished agents in memory.\n\nWe changed the instructions and checks future workers would receive. The repository now has guidance on file size, function complexity, and where new behavior belongs, split by area so workers get the relevant rules when they need them. We also added a check that flags removed public names and tests for review.\n\nMy Hermes skills were automatically updated with lessons from this refactor, which I can share with the team. All for 1% of the cost and 1% of the time we’d estimated it would take if we attempted it manually.\n\nThis was a great example of how Hermes is a superpower for teams: work through a problem with Hermes, let it record what you learned, and make that experience available to the next task and the next engineer. The next time we tackle a refactor, my Hermes and the engineers using the updated skill can start with the lessons from this one.\n\n",
+ "meta": {
+  "fixture_added": "2026-09-17",
+  "source": "pasted text — full article (9,885 chars) from Devon's test battery, 2026-09-17",
+  "profile": "default (repo-local profile.md was a verbatim copy of bundled default_profile.md at run time — verified by diff)",
+  "model": "z-ai/glm-5.3-flash",
+  "synthesis_model": "z-ai/glm-5.3-flash",
+  "depth": "standard",
+  "backends": {
+   "resolve": "tavily",
+   "adjacency": "exa"
+  },
+  "regression_role": "Article-input baseline. HISTORY (corrected 2026-09-17): the v1.1 plan originally recorded this run as 'zero finds' — that was a diagnostic script bug in the prior session (read top-level keys instead of d['adjacency']); the on-disk artifact always showed 5 finds / 46 raw. Re-characterized empirically 2026-09-17: 3 fresh runs (exa/standard, tavily-degraded, picky/exa) all produced 5 finds; the total-failure mode did not recur. Post-fix contract: article inputs keep producing finds; the all-queries-fail path degrades gracefully instead of RuntimeError.",
+  "known_result_at_capture": "adjacency.finds count = 5 (46 raw results, exa)"
+ }
+}

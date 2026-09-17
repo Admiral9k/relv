@@ -1,0 +1,113 @@
+{
+ "verdict": {
+  "content_summary": "A controlled experiment measuring whether splitting large functions reduces the token cost of AI agent code navigation. The authors simulated 4,000 identical symbol lookups on original vs. refactored versions of a codebase, modeling an agent with a line-windowed file reader: find the definition, read a fixed 60-line window, escalate to 2,000-line continuation windows only if the definition overflows. Splitting cut mean tokens per lookup from 2,218 to 993 and extra-window reads from 628 to 184, but the median lookup actually got slightly worse (denser code fits fewer comments into a fixed window), showing the gains came entirely from eliminating the largest definitions. The authors are explicit that end-to-end task performance was not measured — only retrieval cost.",
+  "grabs": [
+   {
+    "type": "aspect",
+    "what": "The simulated-lookup benchmark methodology: model an agent's windowed reads deterministically (search definition, fixed small window, fixed escalation size) and count tokens before/after restructuring",
+    "why": "You run local coding agents and an ingest pipeline with structured in/out — this is a cheap, offline, plain-text way to quantify whether your own codebase layout or markdown queue chunking is actually agent-friendly, without burning live agent runs. It's exactly the 'mechanism I can port, not a product to buy' pattern: a benchmark script you own, no accounts, no cloud."
+   },
+   {
+    "type": "aspect",
+    "what": "The tail-targeted splitting heuristic: mean retrieval cost is dominated by a few giant definitions, so split the outliers rather than splitting uniformly — and expect the median to regress",
+    "why": "Directly changes how you structure agent-facing code and pipeline chunks. The mean-hides-median finding warns against cargo-culting 'smaller is better for agents' — relevant both to your own projects and to how you size markdown blocks flowing into your structured queues. One refactor pass targeting the biggest offenders (huge functions, massive doc blobs) captures most of the win."
+   },
+   {
+    "type": "aspect",
+    "what": "Tiered windowed reads as a retrieval model: small fixed initial context window with large escalation windows on overflow",
+    "why": "A concrete, portable parameterization for your own agents' file-reading and document-processing tools — the 60-line/2,000-line scheme is a minimal design that matches how agents actually pay for context. Fits your small-single-purpose-tools ethos: the lookup procedure is a spec for a composable reader you could build in an afternoon."
+   }
+  ],
+  "aspects": [
+   "Simulated-lookup benchmarking: deterministically replay an agent's windowed context retrieval and count tokens to measure layout cost without running real agents",
+   "Tail-driven optimization: context-cost distributions are dominated by the largest items; splitting outliers beats uniform splitting, and the mean can mask a median regression",
+   "Controlled A/B restructuring: hold the retrieval procedure constant and diff token distributions across a refactor to isolate one variable",
+   "Tiered windowed reads (small initial window, large escalation on overflow) as a cheap model of real agent retrieval cost",
+   "Human-navigable code layout as a token-cost lever for agents — with the density tradeoff as a counterweight"
+  ],
+  "adjacency_queries": [
+   "write-ups that benchmark LLM context retrieval cost via simulated windowed reads instead of live agent runs",
+   "experiments on markdown or RAG chunk sizing where shrinking chunks cut retrieval tokens but fixed-size windows regressed on dense content",
+   "research on making knowledge bases agent-navigable: splitting large documents vs. forcing agents to hop across files",
+   "cases where optimizing mean token or context cost hid a median regression in retrieval granularity or prompt budgets"
+  ],
+  "models": [
+   {
+    "model": "z-ai/glm-5.3-flash",
+    "verdict": "aspect",
+    "why": "You run local coding agents and an ingest pipeline with structured in/out — this is a cheap, offline, plain-text way to quantify whether your own codebase layout or markdown queue chunking is actually agent-friendly, without burning live agent runs. It's exactly the 'mechanism I can port, not a product to buy' pattern: a benchmark script you own, no accounts, no cloud.; Directly changes how you structure agent-facing code and pipeline chunks. The mean-hides-median finding warns against cargo-culting 'smaller is better for agents' — relevant both to your own projects and to how you size markdown blocks flowing into your structured queues. One refactor pass targeting the biggest offenders (huge functions, massive doc blobs) captures most of the win."
+   }
+  ],
+  "confidence": null
+ },
+ "adjacency": {
+  "finds": [
+   {
+    "name": "RepoNav: From Snippet Retrieval to File-Centered Repository Navigation for Code Agents",
+    "url": "https://arxiv.org/abs/2609.08355",
+    "what_it_is": "arXiv paper proposing that code agents navigate repositories via file-centered structural maps rather than flat snippet retrieval.",
+    "different_angle": "Same underlying question — how artifact organization drives code-agent retrieval cost — but instead of reshaping the code (splitting functions to fit windows) it reshapes the navigation layer (a structured map the agent walks). It also scores end-to-end task success, which the triaged experiment explicitly did not measure.",
+    "why_relevant_to_profile": "They run local coding agents on their own repos; a plain-file navigation index the agent reads is a portable mechanism they can build with SQLite + markdown, not a hosted product — exactly their 'mechanisms I can port' preference.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "rag-chunking-strategies — chunking determines which questions are even representable",
+    "url": "https://github.com/Arnav-Ajay/rag-chunking-strategies/blob/main/README.md",
+    "what_it_is": "Small Python repo with a fixed retrieval/eval harness showing that changing only the chunking strategy changes which questions a RAG system can answer at all, independent of retrieval quality.",
+    "different_angle": "Generalizes the triaged median-regression finding: structure doesn't just shift token cost, it changes what's accessible — fixed windows can make some content unreachable, not merely pricier. Document/RAG domain instead of code navigation.",
+    "why_relevant_to_profile": "Their pipeline is markdown-in, structured queues out; a tiny reproducible harness like this is the 'small single-purpose tool' they compose, and the representability check is a cheap audit they could bolt onto their ingest to catch silently-broken chunks.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Is Progressive Disclosure All You Need for Long-Context Agents?",
+    "url": "https://arxiv.org/pdf/2607.17598.pdf",
+    "what_it_is": "Paper evaluating agents that get a document path (Agent Skills folders) and decide what to read on demand, versus stuffing the whole document or bolting on a separate retriever, for long-document QA.",
+    "different_angle": "Tests the same windowed-read navigation the triaged experiment simulated (find the target, read selectively, escalate), but lets the agent choose its own read policy instead of a fixed 60-line rule, and evaluates task performance on documents rather than retrieval token cost on code.",
+    "why_relevant_to_profile": "Agent Skills are plain-text/markdown folder packages — a natural fit for their plain-text-first, self-hosted stack — and progressive disclosure is directly portable to their document-processing agents, especially with the small local models they route through OpenRouter.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "I Tested Chunking on Docs, PDFs, and Code. The Winner Changed Every Time.",
+    "url": "https://dev.to/ayanarshad02/i-tested-chunking-on-docs-pdfs-and-code-the-winner-changed-every-time-1lof",
+    "what_it_is": "Practitioner experiment running structured chunking trials across markdown docs, PDFs, and code, finding the best splitter is content-type-dependent — the chunker that won on markdown actively hurt code.",
+    "different_angle": "Isolates the same mechanism behind the triaged median regression (fixed-size windows interact with content density) but varies the content type instead of the artifact structure, showing there is no universal split size — a cross-domain counterpart to 'denser code fits fewer comments in a fixed window.'",
+    "why_relevant_to_profile": "Their ingest pipeline handles mixed markdown and code, so the copyable experiment design (and the warning against one-size chunk settings) lets them tune their own pipeline by measurement rather than default config values.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "Contextual RAG: per-chunk vs per-document context (reproducible benchmark)",
+    "url": "https://contextual.ai/blog/platform-benchmarks-2025",
+    "what_it_is": "Small reproducible benchmark repo comparing two contextual-retrieval strategies (prepending a context note per chunk vs per document) on cost, speed, and retrieval accuracy, built on Anthropic's contextual retrieval writeup.",
+    "different_angle": "Shares the triaged experiment's methodology — a fixed harness with simulated lookups measuring token cost and accuracy instead of live agent runs — but pulls a different lever: context-annotation granularity rather than artifact splitting, in the document/RAG domain rather than code.",
+    "why_relevant_to_profile": "It's a run-it-yourself, BYO-key measurement harness rather than a product, matching their stated preference; per-chunk context-cost accounting maps directly onto their markdown-to-structured-queue pipeline decisions.",
+    "original_url": "https://github.com/Raphael2908/contextual-RAG-per-chunk-vs-per-doc/blob/main/README.md",
+    "url_status": "re_resolved"
+   }
+  ],
+  "sludge_check": "Discarded: llmtest.io 'Best LLMs with 1M+ context' and NeuroLink '10 Chunking Strategies' (listicles); CopilotKit RAG-vs-context and Compresr over-retrieval guides (vendor content marketing, the exact thin-wrapper pattern the profile rejects); TildAlice (affiliate-link post); costperprompt and The Neural Base (SEO pricing/course pages); Dibi8 (page opens with its own meta description — SEO farm); Medium 'cut API costs 55%' case study (thin consulting promo); Ai21 and Yoke Agent chunking posts (technical marketing from vendors — superseded by independent experiments); Medium large-window-vs-vector-search and benchr model-comparison pieces (intro-level or model-spec comparisons, not mechanism-bearing); DEV '2 Were Quietly Broken' and 'Where Does RAG Cost Money' (redundant with stronger dev.to pick); Code With Seb and stridenote kept as runners-up. Deduped the rag-chunk forks (Zahgon/singyichen are the same repo, both 0-star — dropped as unmaintained duplicates).",
+  "_backend": "exa",
+  "_n_raw_results": 47
+ },
+ "input": "Does code that's easier for humans to navigate also work better for agents? Splitting a function makes its definition shorter, but may require the agent to follow calls into other files. We tested one part of that question by simulating lookups of the same 4,000 symbols in both versions. Each lookup",
+ "meta": {
+  "fixture_added": "2026-09-17",
+  "source": "pasted text — Devon's test battery, 2026-09-17 (snippet from same article as 005)",
+  "profile": "default (repo-local profile.md was a verbatim copy of bundled default_profile.md at run time — verified by diff)",
+  "model": "z-ai/glm-5.3-flash",
+  "synthesis_model": "z-ai/glm-5.3-flash",
+  "depth": "standard",
+  "backends": {
+   "resolve": "tavily",
+   "adjacency": "exa"
+  },
+  "regression_role": "Healthy-path regression baseline: 5 finds at capture. Guards the success lane — fixes (esp. any query-writer or synth changes) must not starve normal-length inputs of finds.",
+  "known_result_at_capture": "adjacency.finds count = 5",
+  "flagged_urls_at_capture": [
+   "https://arxiv.org/abs/2609.08355",
+   "https://github.com/Arnav-Ajay/rag-chunking-strategies/blob/main/README.md",
+   "https://arxiv.org/pdf/2607.17598.pdf",
+   "https://dev.to/ayanarshad02/i-tested-chunking-on-docs-pdfs-and-code-the-winner-changed-every-time-1lof"
+  ],
+  "input_capture_note": "Input captured by relv's _meta at 300 chars (cli.py input[:300]); this fixture preserves the captured prefix, not the full paste. v1.1 item: store full input (capped) in meta."
+ }
+}

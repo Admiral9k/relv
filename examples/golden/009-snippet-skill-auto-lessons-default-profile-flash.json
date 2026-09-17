@@ -1,0 +1,112 @@
+{
+ "verdict": {
+  "content_summary": "This describes a skill for the Hermes agent that was not authored but accumulated: whenever Hermes worked out a procedure or corrected a mistake during repo work, it saved the lesson into a Markdown skill document (with optional reference files/scripts) that it loads on later tasks. The agent itself writes and revises these docs, making the skill a living, self-maintained knowledge base derived from its own operating history. The content surfaces two concrete techniques captured this way: a clean-environment repro on unchanged origin/main HEAD to classify a failing test as pre-existing vs. introduced, and a frozen-baseline comparison used during a multi-worker refactor to separate baseline-inherent failures from integration-introduced ones.",
+  "grabs": [
+   {
+    "type": "aspect",
+    "what": "Self-accumulating agent skills: the agent appends reusable lessons to a Markdown doc as it works, instead of skills being written upfront",
+    "why": "Directly portable to their local AI agents. Their stack is markdown-first and their coding/document agents already produce structured output; adding a rule like 'when you fix a mistake or discover a working procedure, append a dated lesson to skills/<topic>.md' turns their repos into agent memory with zero new infrastructure — no cloud, no new account, SQLite-simple."
+   },
+   {
+    "type": "aspect",
+    "what": "Clean-HEAD baseline repro rule: run a failing test on unchanged code in a clean environment before debugging",
+    "why": "This is a drop-in verification step for any agent pipeline that touches their repos — it stops agents from 'fixing' pre-existing breakage and polluting diffs. Worth baking into their coding-agent prompts or skill files verbatim, since it's a one-line procedure with high signal."
+   },
+   {
+    "type": "aspect",
+    "what": "Frozen-baseline diffing for parallel integration: check failures from worker output against a frozen reference to isolate newly introduced errors",
+    "why": "Maps cleanly onto their multi-model routing through OpenRouter: when several small models work in parallel on one codebase or document set, comparing each worker's failures against a frozen baseline separates model-introduced regressions from pre-existing noise — the same triage problem they'll hit the moment they fan work out to multiple models."
+   }
+  ],
+  "aspects": [
+   "Agent-authored procedural memory: the system writes and revises its own instruction docs from operating history, so knowledge compounds instead of being spec'd upfront",
+   "Skills as loadable Markdown plus scripts: machine-readable-but-human-editable knowledge the agent reads at task time, no proprietary format",
+   "Baseline classification: distinguishing pre-existing failures from introduced ones by reproducing on a clean reference point before acting",
+   "Frozen-reference integration: evaluating parallel/merged work against a fixed snapshot so inherent noise doesn't mask regressions"
+  ],
+  "adjacency_queries": [
+   "LLM agents that persist lessons learned into markdown memory files during autonomous work, rather than fixed system prompts",
+   "CI tooling that runs failing tests on a clean baseline commit to classify pre-existing versus newly introduced failures",
+   "merge queue or integration bots that diff errors against a frozen baseline when combining work from parallel contributors",
+   "open-source formats for agent skill files that pair markdown instructions with executable scripts a local agent loads at runtime"
+  ],
+  "models": [
+   {
+    "model": "z-ai/glm-5.3-flash",
+    "verdict": "aspect",
+    "why": "Directly portable to their local AI agents. Their stack is markdown-first and their coding/document agents already produce structured output; adding a rule like 'when you fix a mistake or discover a working procedure, append a dated lesson to skills/<topic>.md' turns their repos into agent memory with zero new infrastructure — no cloud, no new account, SQLite-simple.; This is a drop-in verification step for any agent pipeline that touches their repos — it stops agents from 'fixing' pre-existing breakage and polluting diffs. Worth baking into their coding-agent prompts or skill files verbatim, since it's a one-line procedure with high signal."
+   }
+  ],
+  "confidence": null
+ },
+ "adjacency": {
+  "finds": [
+   {
+    "name": "SAKU (omohikane/saku)",
+    "url": "https://www.sakuofficial.com/about",
+    "what_it_is": "Self-evolving local AI agent (Python, MIT) with persistent personality and Markdown memory, running on small local models (llama-cpp, Ollama, Qwen) and journaling into Obsidian-compatible notes.",
+    "different_angle": "Shares the core mechanism of the triaged content — an agent accumulating its own knowledge base from operating history instead of a fixed prompt — but applies it to a personal companion/journaling domain rather than repo-work skills, and grounds the loop in local models instead of a cloud agent.",
+    "why_relevant_to_profile": "Matches the profile's local-model, self-hosted, offline-first stack and markdown-first notes; the journal-to-memory growth loop is a portable pattern for the profile's own agents' lesson accumulation.",
+    "original_url": "https://github.com/omohikane/saku",
+    "url_status": "re_resolved"
+   },
+   {
+    "name": "Regression triage & baseline diff (koreaelonmusk/entropy-loop-core)",
+    "url": "https://github.com/koreaelonmusk/entropy-loop-core/blob/main/docs/regression-triage.md",
+    "what_it_is": "Docs describing a deterministic, fully local baseline-diff: compare two JSON test reports and classify each case as newly failing, fixed, already failing, or missing, emitting a JSON or Markdown report.",
+    "different_angle": "Takes the triaged content's frozen-baseline comparison out of the agent's learned heuristic and makes it an explicit deterministic tool — classification by report diff rather than by re-running on a clean origin/main HEAD.",
+    "why_relevant_to_profile": "Pure structured in/out (JSON reports in, classified JSON/Markdown out), runs locally with no service; the classify-movement logic can be ported directly into the profile's ingest pipeline or CI scripts.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "claude-code-merge-queue (funador)",
+    "url": "https://github.com/funador/claude-code-merge-queue",
+    "what_it_is": "Local, zero-cost merge queue (MIT, npm) that serializes landing, building, and testing for parallel Claude Code agents working in git worktrees.",
+    "different_angle": "Attacks the same multi-worker integration problem as the frozen-baseline technique, but prevents integration failures by serializing landings against latest main instead of diagnosing them after the fact.",
+    "why_relevant_to_profile": "The profile runs multiple local agents on self-hosted infrastructure; this is cheap, single-purpose, composes with git worktrees, and needs no SaaS queue.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "quietclash (arbade/quietclash)",
+    "url": "https://github.com/arbade/quietclash",
+    "what_it_is": "Small MIT tool that detects silent behavioral conflicts between parallel coding agents — branches that merge cleanly and pass tests but break at runtime.",
+    "different_angle": "Extends the frozen-baseline comparison from test results to runtime behavior: it catches integration-introduced breakage that the triaged content's test-based baseline diff would miss entirely.",
+    "why_relevant_to_profile": "Directly useful when the profile's parallel local agents touch the same codebase; small, self-hostable, and the behavioral-diff idea ports into the profile's own pipelines.",
+    "url_status": "flagged"
+   },
+   {
+    "name": "AgentSkills Spec (choutos/agent-skills-spec)",
+    "url": "https://agentskills.io/specification",
+    "what_it_is": "Open, framework-agnostic MIT specification for packaging procedural knowledge as SKILL.md files — markdown instructions plus optional scripts — that agents load at runtime.",
+    "different_angle": "Formalizes the triaged content's skill-file format (markdown doc + reference scripts) as a portable inter-agent standard, rather than one agent's self-accumulated convention.",
+    "why_relevant_to_profile": "The profile wants open formats and mechanisms to port; this spec lets its own agents write and read interchangeable skill docs without locking into any vendor's framework.",
+    "original_url": "https://github.com/choutos/agent-skills-spec",
+    "url_status": "re_resolved"
+   }
+  ],
+  "sludge_check": "Dropped Mergify, Mergebot.dev, and stoneforge auto-merge docs — hosted SaaS merge-queue marketing aimed at team/enterprise pricing, the exact per-seat/cloud pattern the profile rejects. Dropped depot.dev 'failure fingerprints' (vendor blog for a CI product) and the Microsoft Learn Agent Framework skills page (big-vendor framework docs, not a portable small mechanism). Deduped fork/listing noise: npm.io page and 2233admin fork of claude-code-merge-queue (kept funador original), BassaoudM/agentmemory + raj-shahh/agentmemory + pellera9/exo (0-star forks with 'iii-engine' boilerplate), JesseBrown1980/ai-memory (grab-bag fork), and the near-clone pair Defiladeboarfish90/agent-memory + INOSX/agent-memory (same top contributor, interchangeable). Also skipped foremerge.com marketing site, the single-commit framersai/agentos doc page, and avera's hosted railway.app homepage (service signal). Impact-analysis selectors (pytest-impacted, selective-test-runner, affected-tests) were considered but their predict-impacted-tests angle is further from baseline classification than the picks above.",
+  "_backend": "exa",
+  "_n_raw_results": 48
+ },
+ "input": "My hermes-agent-dev skill grew out of my everyday work on the repository. When we worked out a procedure or I corrected a mistake, Hermes automatically noticed this and saved the reusable lesson. Over time, it accumulated instructions about how to prepare a PR, which shortcuts to avoid, and how to v",
+ "meta": {
+  "fixture_added": "2026-09-17",
+  "source": "pasted text — Devon's test battery, 2026-09-17 (snippet from same article as 005)",
+  "profile": "default (repo-local profile.md was a verbatim copy of bundled default_profile.md at run time — verified by diff)",
+  "model": "z-ai/glm-5.3-flash",
+  "synthesis_model": "z-ai/glm-5.3-flash",
+  "depth": "standard",
+  "backends": {
+   "resolve": "tavily",
+   "adjacency": "exa"
+  },
+  "regression_role": "Healthy-path regression baseline: 5 finds at capture. Guards the success lane — fixes (esp. any query-writer or synth changes) must not starve normal-length inputs of finds.",
+  "known_result_at_capture": "adjacency.finds count = 5",
+  "flagged_urls_at_capture": [
+   "https://github.com/koreaelonmusk/entropy-loop-core/blob/main/docs/regression-triage.md",
+   "https://github.com/funador/claude-code-merge-queue",
+   "https://github.com/arbade/quietclash"
+  ],
+  "input_capture_note": "Input captured by relv's _meta at 300 chars (cli.py input[:300]); this fixture preserves the captured prefix, not the full paste. v1.1 item: store full input (capped) in meta."
+ }
+}
