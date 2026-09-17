@@ -1,0 +1,8 @@
+2026-09-17, ~04:3x UTC, relv v1 build session (E+)
+$ uv run pytest tests/test_relv.py -q
+21 passed in 158.32s
+
+All 21 tests green with live keys (OPENROUTER/TAVILY/EXA sourced from /home/hermes/relv.env):
+- 19 unit tests (offline)
+- 2 live integration tests incl. full-pipeline URL path (goblin.tools): verdict matched
+  the golden schema, one-entry models array, adjacency + find-URL validation ran.

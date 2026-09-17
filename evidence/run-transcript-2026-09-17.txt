@@ -1,0 +1,100 @@
+Thu Sep 17 04:43:02 AM UTC 2026
+$ relv Linear
+============================================================
+relv — Linear
+============================================================
+
+Linear is a hosted, closed-source SaaS issue tracker and project-management workspace for software teams — issues, sprints/cycles, and project coordination behind a web app with per-seat pricing. The extraction itself is almost entirely marketing payload: customer logos (OpenAI, Perplexity, Cursor), 45% of YC, $100M ARR, an $82M Series C at $1.25B — zero architecture or mechanism described. What the product is actually known for beneath the gloss (a fast keyboard-first UI over structured issue records and a triage inbox that gates new items before the backlog) isn't explained on this page.
+
+GRABS:
+  [NONE] Linear issue-tracking SaaS
+      Hits nearly every rejection in the profile: hosted-only closed SaaS, per-seat pricing, account-gated, data lives in their cloud — and the content itself is press-release noise (valuation, ARR, logos) with nothing inspectable. The single transferable pattern, a triage inbox that forces accept/reject classification before items reach a backlog, is a gate the user already runs in their markdown ingest pipeline and exists in terminal-native and plain-text tools; adopting the product buys nothing they can't compose themselves.
+
+ASPECTS:
+  - Triage-inbox gating: incoming items land in a queue that must be classified accept/reject/prioritize before entering the backlog — a firehose brake as a mechanism, not a product
+  - Work items as structured records: stable IDs, typed fields, explicit states, so tasks become machine-readable queues an agent can consume rather than prose for humans
+  - Speed and keyboard-first interaction as the core product bet: minimal surface, every action a keystroke, latency treated as a feature
+
+ADJACENT FINDS:
+  sludge_check: Discarded: goalsandprogress.com work-intake piece (generic productivity-blog advice prose, no portable mechanism, content-marketing framing); both projektor entries (duplicate forks of each other, and Cloudflare Workers hosting conflicts with the offline/no-cloud constraint); specivo (team knowledge-base product framing, redundant with kata's slot, zero traction); vantik ('batteries included' multi-agent PM platform — heavier product than single-purpose tool, overlaps kata); honyoP/taiga (archived/dead). Deduped forks/mirrors to originals: wcravens/git-native-issue kept as remenoscodes original, crates.io ratado kept as GitHub repo, dropped aanmz/tudo, atlantis-9/tuxedo, braveness23/kairo (forks). Terminal task managers (tsk-tui, tasc, GoTaskCli, taskframe, ratado, tudo, tuxedo) collapsed to the single strongest pick (omm); agent-native trackers (filigree, IssueDeck, agent-issue-tracker) collapsed to kata (most mature at 304 stars, 20 contributors). Set aside captainrandom's three same-site pieces, andymatuschak's conceptual note, karlbaz's business-operator inbox, and the tinqabot email-triage article: the triage-gate mechanism is already covered by the two most portable picks (Crosley's scoring, Wildfeuer's principle), and the remaining ones are either series-dependent, conceptual, or off-profile (Gmail/CRM business ops).
+  - kata  <https://www.katacare.com>  [re_resolved]
+      what:  Local-first issue tracker (MIT, Go, ~304 stars) with an agent-facing CLI that emits stable JSON against a local SQLite database, plus a human-facing TUI for browsing, triage, and supervising agent-written work.
+      angle: Keeps Linear's core mechanism — work items as structured records with stable IDs that scripts and agents read/write — but inverts the architecture: local daemon + SQLite instead of hosted SaaS, JSON-out CLI for machines and TUI for humans instead of a web app with per-seat pricing.
+      why:   Directly serves the declared stack of local AI agents with structured in/out: agents file and update issues through stable CLI commands with predictable JSON while he supervises in the TUI; SQLite-over-managed-DBs, MIT license, and self-hosting match his stated defaults.
+  - git-native-issue  <https://github.com/remenoscodes/git-native-issue/blob/main/README.md>  [flagged]
+      what:  Distributed issue tracking implemented inside Git's native data model — a `git issue` command that stores issues as Git objects, syncs via ordinary push/pull, with bridges to GitHub/GitLab/Gitea and a documented AI-agent workflow section.
+      angle: Same mechanism as Linear's issue records (stable IDs, structured state changes), but the storage substrate is the Git object database instead of a server-side database — issues become plain, versioned, offline-syncable objects with no service running anywhere.
+      why:   Plain-text-first, fully offline, zero accounts, zero cloud — the strongest possible answer to his no-data-in-someone-else's-cloud constraint; the data-model section is a portable mechanism for embedding structured queues in repos he already versions.
+  - Signal Scoring Pipeline: Deterministic Knowledge Triage  <https://blakecrosley.com/blog/signal-scoring-pipeline>  [flagged]
+      what:  A mechanism-first writeup of a deterministic scoring pipeline that replaces vibes-based note triage: a weighted composite score decides which saved items rise in a personal knowledge base, framed as encoding subjective judgment into deterministic systems.
+      angle: Takes Linear's triage-inbox mechanism — gate new items before they reach the backlog — and replaces the human gate with an encoded, tunable composite score; the gate becomes arithmetic rather than a product feature.
+      why:   His ingest pipeline is 'markdown in, structured queues out'; a weighted score is exactly the missing ordering signal for those queues, and the post is a portable mechanism ('taste infrastructure'), not a product to subscribe to.
+  - Protocol at Ingress, Judgment at Promotion  <https://ingress.fandom.com/wiki/Agent_Protocol>  [re_resolved]
+      what:  A short standalone architecture-pattern essay: accept anything at ingress with loose parsing and minimal rejection, but enforce a strict protocol (schema, validation) only at the promotion step where items move into the trusted layer.
+      angle: Abstracts Linear's triage inbox into a two-layer contract principle — 'loose at ingress, strict at promotion' — stated as a portable pattern with no product attached, applicable to any pipeline that ingests messy agent output.
+      why:   Operationalizes his 'prose is for humans, data is for machines' rule: agents and captures can dump loose markdown at ingress while his structured queues only admit records that pass the promotion protocol — droppable directly into his ingest pipeline.
+  - omm (on-my-mind)  <https://github.com/dhth/omm/>  [flagged]
+      what:  A keyboard-driven task manager for the command line (Go/Bubble Tea, MIT, actively released with 14 releases) built around fast capture and review of tasks — local, no server, no accounts.
+      angle: Takes the part of Linear people actually praise — keyboard-first speed over structured records — and rebuilds it as a single-purpose terminal tool where minimal UI is the whole product, minus the workspace, cycles, and per-seat pricing.
+      why:   He lives in the terminal and wants small tools that compose: omm is a mature, offline, single-binary capture-and-triage surface for tasks that sits alongside his agent pipelines without becoming another hosted workspace.
+FLAGGED FIND URLS (name/url mismatch, unresolved):
+  - https://github.com/remenoscodes/git-native-issue/blob/main/README.md
+  - https://blakecrosley.com/blog/signal-scoring-pipeline
+  - https://github.com/dhth/omm/
+
+verdict-as-data (models): [{"model": "z-ai/glm-5.3-flash", "verdict": "none", "why": "Hits nearly every rejection in the profile: hosted-only closed SaaS, per-seat pricing, account-gated, data lives in their cloud \u2014 and the content itself is press-release noise (valuation, ARR, logos) with nothing inspectable. The single transferable pattern, a triage inbox that forces accept/reject classification before items reach a backlog, is a gate the user already runs in their markdown ingest pipeline and exists in terminal-native and plain-text tools; adopting the product buys nothing they can't compose themselves."}]
+
+$ relv "Goblin Tools is a free AI todo app that breaks tasks into smaller steps"
+$ relv "Goblin Tools is a free AI todo app that breaks tasks into smaller steps"
+============================================================
+relv — Goblin Tools is a free AI todo app that breaks tasks into smaller steps
+============================================================
+
+Goblin Tools is a free web suite of single-purpose LLM mini-tools by Bram De Buyser, aimed at neurodivergent users but broadly useful, with no account requirement and a free web tier. The flagship, Magic ToDo, recursively decomposes a task into verb-noun substeps, with a 'spiciness' slider serving as a single scalar that controls how granular each decomposition pass gets; subtasks can themselves be re-decomposed. Supporting micro-tools share the same backend pattern: Compiler converts unstructured brain dumps into organized lists, Formalizer/Judge rewrite or classify text tone, Estimator predicts task duration, Chef plans meals from constraints. Architecturally it's one LLM core surfaced through many tiny composable frontends, each doing one prose-to-structure (or structure-to-prose) transform.
+
+GRABS:
+  [ASPECT] Recursive task decomposition with a granularity dial: break a goal into verb-noun actions, then re-run the same decomposition on any subtask, with one scalar ('spiciness level') mapped into the prompt to control output granularity
+      Directly portable into the local agents they already run for research and document processing — it's a reusable prompt pattern, not a product. The single-knob granularity control is exactly the kind of 'structured in/out for machines' mechanism they value, and it'd work fine over OpenRouter or a small local model instead of Goblin Tools' cloud backend.
+
+  [ASPECT] The Compiler pattern: an LLM stage that ingests unstructured brain-dump prose and emits organized, structured lists
+      This is literally their ingest pipeline philosophy — 'markdown in, structured queues out' — applied to human messiness. A local, self-hosted 'compiler' stage over their notes (messy markdown → structured task/queue entries) is a buildable weekend project that fits their SQLite-and-plain-text stack; the value here is the mechanism, since they reject cloud-dependent tools.
+
+  [ASPECT] One shared LLM backend with many tiny single-purpose frontends, each a narrow prose transform (decompose, reformat, classify, estimate)
+      Mirrors their stated preference for 'small, single-purpose tools that do one thing well (I can compose them).' The pattern — a common inference core exposed as composable micro-commands, each with trivial structured input/output — is how they could organize their own local model routing instead of monolithic agent prompts.
+
+ASPECTS:
+  - Recursive decomposition with a scalar granularity dial: same prompt re-applied at each level, one user-facing knob controlling depth/verbosity of the structured output
+  - LLM-as-compiler for human input: normalize unstructured prose into machine-consumable structured lists before anything downstream touches it
+  - Micro-tool suite over a shared inference core: many narrow single-purpose frontends, one backend, each tool trivially composable
+  - Tone/classification as an isolated transform: judging or rewriting text as its own tiny structured-in/structured-out step rather than baking it into a bigger flow
+
+ADJACENT FINDS:
+  sludge_check: Discarded: NEXUS landing page (metric-stuffed marketing site with a curl|bash installer — press-release energy, no readable mechanism); github.laiyagushi.com/anchapin/fractals (lookalike-domain mirror duplicating TinyAGI/fractals); ai-knowledge-engineer on PyPI (unrenderable 'Client Challenge' page, nothing to evaluate); Forge-Agentic-Coding-CLI and lychee (kitchen-sink runtimes with feature-count READMEs — the opposite of single-purpose micro-tools, and lychee is just the backend layer, not the one-core-many-frontends pattern); ai-decomposer (mechanism drift — the novelty is libp2p gossip, not decomposition); zenii/klio/cccc/hcom/gg-cli/lacp (agent memory and coordination layers — different mechanism entirely); synthadoc (ASCII-art README, no discernible mechanism). Deduped during triage: Mathews-Tom/rlm vs its PyPI twin llm-recursive (kept the single-file AgenticX decomposer as more portable), both fractals swarm orchestrators (heavier than the mechanism warrants), and the redundant second-brain/braindump/Obsidian-pipeline cluster (Synto covers the local markdown-to-structure mechanism best). No listicles or major-brand blog spam survived the first pass.
+  - Axe (jrswab/axe)  <https://github.com/jrswab/axe>  [flagged]
+      what:  Lightweight Go CLI (833 stars, Apache-2.0) for running single-purpose AI agents defined in TOML files, triggerable from pipes, git hooks, cron, or the terminal.
+      angle: Same architectural mechanism as Goblin Tools — one LLM backend surfaced through many tiny single-purpose frontends — but relocated from a consumer web suite to Unix: each focused prose-to-structure transform is a TOML-defined agent you compose with pipes and hooks instead of clicking buttons.
+      why:   Directly matches the 'small, single-purpose tools I can compose' value and terminal-dweller workflow; TOML config plus stdin/stdout fits the plain-text, markdown-in/structured-out pipeline, and it runs locally against the user's own keys and models.
+  - Sprout (hlbbbbbbb/sprout)  <https://pbs-kids-sprout-tv.fandom.com/wiki/SproutOnline.com>  [re_resolved]
+      what:  Small MIT Python framework where task trees grow themselves: each agent decides whether and how to split its own task, recursively, over litellm with asyncio.
+      angle: Inverts Magic ToDo's granularity control: instead of a top-down 'spiciness' scalar set by the user, decomposition depth emerges bottom-up from each node's own split-or-execute judgment — the same recursive re-decomposition mechanism, but self-tuned rather than slider-controlled.
+      why:   litellm backing plugs straight into the profile's multi-model routing habit (OpenRouter + small local models); the codebase is small enough to read and port the self-splitting decision logic into the user's own agents.
+  - AgenticX task_decomposer.py  <https://www.agenticx.world>  [re_resolved]
+      what:  A single readable Python module: an LLM 'task planning specialist' prompt plus a decomposer that emits a dependency DAG of structured subtasks for parallel execution.
+      angle: Performs the same verb-noun task-decomposition transform as Magic ToDo, but outputs a machine-consumable dependency DAG instead of a human to-do list, and the entire mechanism is one stealable file rather than a hosted suite.
+      why:   The literal 'mechanisms I can port' play: lift the DECOMPOSE_PROMPT and DAG logic into the user's markdown-in/structured-queues-out pipeline; JSON-structured in/out matches their 'prose is for humans, data is for machines' rule.
+  - Synto (kytmanov/synto)  <https://github.com/kytmanov/synto/blob/7a2c9c7825a27e831dcbc47797ec84c85f332861/README.md>  [flagged]
+      what:  Fully local (Ollama) knowledge pipeline, ~199 stars: drop in Markdown notes, AI extracts concepts, and an Obsidian wiki auto-links and grows; nothing leaves the machine.
+      angle: Goblin Tools' Compiler turns one brain dump into an organized list; Synto runs the same unstructured-prose-to-structure transform continuously over a markdown corpus, compounding into a cross-linked concept graph rather than a one-shot list.
+      why:   Markdown-in, structured output, 100% local via Ollama, zero accounts — hits nearly every stated constraint (plain-text-first, self-hosted, no cloud lock-in) and slots directly beside the existing ingest pipeline.
+  - prompt-intent-mini (TinyModels)  <https://huggingface.co/TinyModels/prompt-intent-mini>  [flagged]
+      what:  A small Hugging Face model that classifies a prompt's intent (question, command, creative request, etc.) with minimal compute, intended for routing/filtering before downstream processing.
+      angle: The Judge micro-tool classifies tone via a big shared LLM backend; this is the same classify-text mechanism executed by a tiny local model whose output is a machine-readable routing label — classification as pipeline plumbing rather than a user-facing judgment.
+      why:   Fits the 'small local models' side of the user's routing stack: a cheap intent classifier in front of OpenRouter/local models to triage the ingest queue or dispatch agent requests without a per-request LLM call.
+FLAGGED FIND URLS (name/url mismatch, unresolved):
+  - https://github.com/jrswab/axe
+  - https://github.com/kytmanov/synto/blob/7a2c9c7825a27e831dcbc47797ec84c85f332861/README.md
+  - https://huggingface.co/TinyModels/prompt-intent-mini
+
+verdict-as-data (models): [{"model": "z-ai/glm-5.3-flash", "verdict": "aspect", "why": "Directly portable into the local agents they already run for research and document processing \u2014 it's a reusable prompt pattern, not a product. The single-knob granularity control is exactly the kind of 'structured in/out for machines' mechanism they value, and it'd work fine over OpenRouter or a small local model instead of Goblin Tools' cloud backend.; This is literally their ingest pipeline philosophy \u2014 'markdown in, structured queues out' \u2014 applied to human messiness. A local, self-hosted 'compiler' stage over their notes (messy markdown \u2192 structured task/queue entries) is a buildable weekend project that fits their SQLite-and-plain-text stack; the value here is the mechanism, since they reject cloud-dependent tools."}]
+
+Thu Sep 17 04:53:59 AM UTC 2026
