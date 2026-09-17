@@ -61,8 +61,12 @@ def run_pipeline(text: str, cfg: Config, emit: bool, out_json: bool) -> int:
         adj = validate_find_urls(adj, cfg, backends["resolve"])
     else:
         # all queries failed/returned nothing — degrade, don't crash the run
-        adj = {"finds": [], "reason": "search unavailable: all queries failed", "sludge_check": ""}
-        notes.append("adjacency degraded: search unavailable (all queries failed)")
+        if v["adjacency_queries"]:
+            adj = {"finds": [], "reason": "search unavailable: all queries failed", "sludge_check": ""}
+            notes.append("adjacency degraded: search unavailable (all queries failed)")
+        else:
+            adj = {"finds": [], "reason": "adjacency unavailable: verdict produced no queries", "sludge_check": ""}
+            notes.append("adjacency degraded: verdict produced no adjacency queries")
     adj["_backend"] = backends["adjacency"]
     adj["_n_raw_results"] = len(results)
 

@@ -56,7 +56,8 @@ def adjacency_search(queries: list, cfg: Config, backend: str, n_results: int) -
         except RuntimeError as e:
             print(f"[adjacency] query {q!r} failed: {e}", file=sys.stderr, flush=True)
     if not all_res:
-        print("[adjacency] all search queries failed or returned nothing — degrading", file=sys.stderr, flush=True)
+        why = "verdict produced no adjacency queries" if not queries else "all search queries failed or returned nothing"
+        print(f"[adjacency] {why} — degrading", file=sys.stderr, flush=True)
     return all_res
 
 

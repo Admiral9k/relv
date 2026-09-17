@@ -417,3 +417,71 @@ def test_pipeline_url_end_to_end(live_cfg, tmp_path):
     assert rc == 0
     mds = list((tmp_path / "emis").glob("*.md"))
     assert len(mds) == 1 and "## Adjacent finds" in mds[0].read_text()
+
+# ---------- post-audit honesty fixes (emit + empty-queries + reason rendering) ----------
+
+def test_emit_md_includes_degradation_and_reason(tmp_path):
+    out = {
+        "verdict": {"content_summary": "s", "grabs": [{"type": "aspect", "what": "w", "why": "y"}],
+                    "aspects": ["a"], "models": [{"model": "m", "verdict": "aspect", "why": ""}]},
+        "adjacency": {"finds": [], "reason": "search unavailable: all queries failed", "sludge_check": ""},
+        "_meta": {"input": "x", "when": "t", "source_desc": "pasted text", "model": "m",
+                   "depth": "standard", "backends": {"resolve": "tavily", "adjacency": "exa"},
+                   "degradation_notes": ["adjacency degraded: search unavailable (all queries failed)"],
+                   "flagged_urls": [], "profile_path": "p", "input_kind": "text"},
+    }
+    path = emit.emit_md(out, str(tmp_path))
+    body = Path(path).read_text(encoding="utf-8")
+    assert "Adjacency unavailable" in body
+    assert "search unavailable: all queries failed" in body
+    assert "Degradation notes" in body
+
+
+def test_emit_md_clean_run_has_no_notes_block(tmp_path):
+    out = {
+        "verdict": {"content_summary": "s", "grabs": [{"type": "aspect", "what": "w", "why": "y"}],
+                    "aspects": ["a"], "models": [{"model": "m", "verdict": "aspect", "why": ""}]},
+        "adjacency": {"finds": [{"name": "n", "url": "u", "what_it_is": "x", "different_angle": "d",
+                                  "why_relevant_to_profile": "y", "url_status": "ok"}], "sludge_check": "fine"},
+        "_meta": {"input": "x", "when": "t", "source_desc": "pasted text", "model": "m",
+                   "depth": "standard", "backends": {}, "degradation_notes": [], "flagged_urls": []},
+    }
+    path = emit.emit_md(out, str(tmp_path))
+    body = Path(path).read_text(encoding="utf-8")
+    assert "Degradation notes" not in body
+    assert "Adjacency unavailable" not in body
+
+
+def test_render_stdout_shows_reason_when_adjacency_degraded():
+    out = {
+        "verdict": {"content_summary": "s", "grabs": [], "aspects": [], "models": []},
+        "adjacency": {"finds": [], "reason": "search unavailable: all queries failed", "sludge_check": ""},
+        "_meta": {"input": "x", "degradation_notes": ["adjacency degraded: search unavailable (all queries failed)"],
+                   "flagged_urls": []},
+    }
+    rendered = emit.render_stdout(out)
+    assert "ADJACENT FINDS UNAVAILABLE" in rendered
+    assert "search unavailable: all queries failed" in rendered
+
+
+def test_pipeline_degrades_when_no_queries_produced(cfg, monkeypatch, tmp_path, capsys):
+    """Empty adjacency_queries list -> distinct, truthful degrade message (not 'all failed')."""
+    import relv.cli as climod
+    import relv.fetch as fetchmod
+    import relv.verdict as verdictmod
+
+    Path(cfg.profile_path).write_text("# P" + chr(10) + "A terminal-first builder." + chr(10))
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-x")
+    monkeypatch.setattr(fetchmod, "search", lambda q, n, b: (_ for _ in ()).throw(RuntimeError("nope")))
+    fake = lambda s, u, c, model=None: {
+        "content_summary": "s", "grabs": [{"type": "aspect", "what": "w", "why": "y"}],
+        "aspects": ["a"], "adjacency_queries": [],
+    }
+    monkeypatch.setattr(verdictmod, "structured_complete", fake)
+    monkeypatch.setattr(fetchmod, "structured_complete", lambda s, u, c, model=None: {
+        "title": "t", "content": "c", "search_results": None})
+    rc = climod.run_pipeline("Some pasted text" + chr(10) + "with a newline", cfg, emit=False, out_json=True)
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 0
+    assert out["adjacency"]["reason"] == "adjacency unavailable: verdict produced no queries"
+    assert "no adjacency queries" in " ".join(out["_meta"]["degradation_notes"])

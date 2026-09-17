@@ -53,7 +53,7 @@ def fetch_url(url: str, cfg: Config | None = None, backends: dict | None = None,
         direct_ok = len(text.strip()) >= 100
     except Exception:
         text = ""
-    if len(text.strip()) < 300 and _tavily_available(backends):
+    if len(text.strip()) < 300 and _tavily_available():
         try:
             t = _tavily_extract(url)
             if t.strip():
@@ -71,9 +71,10 @@ def fetch_url(url: str, cfg: Config | None = None, backends: dict | None = None,
     return {"url": url, "fetched_text": text[:20000]}
 
 
-def _tavily_available(backends: dict | None = None) -> bool:
-    """Tavily extract fallback honors the same key logic as the search stages:
-    only used when the tavily key is present (same env check as config.available_backends).
+def _tavily_available() -> bool:
+    """True when a Tavily key is present. NOTE: this is the extract-fallback
+    gate only — it checks the env key directly and does NOT consult the
+    configured backend map (config.effective_backends governs search stages).
     """
     import os
 

@@ -38,6 +38,14 @@ def emit_md(out: dict, emit_dir: str) -> str:
         f" backends: {meta.get('backends', '')})",
         f"- **When:** {meta.get('when', '')}",
         f"- **Source:** {meta.get('source_desc', '')}",
+    ]
+    if adj.get("reason"):
+        lines.append(f"- **Adjacency unavailable:** {adj['reason']}")
+    if meta.get("degradation_notes"):
+        lines.append("- **Degradation notes:** " + "; ".join(meta["degradation_notes"]))
+    if meta.get("flagged_urls"):
+        lines.append(f"- **Flagged find URLs (name/url mismatch, unresolved):** {meta['flagged_urls']}")
+    lines += [
         "",
         "## Summary",
         "",
@@ -78,6 +86,8 @@ def render_stdout(out: dict) -> str:
     for g in v.get("grabs", []):
         lines += [f"  [{g.get('type', '?').upper()}] {g.get('what', '')}", f"      {g.get('why', '')}", ""]
     lines += ["ASPECTS:"] + [f"  - {a}" for a in v.get("aspects", [])] + [""]
+    if adj.get("reason"):
+        lines += [f"ADJACENT FINDS UNAVAILABLE: {adj['reason']}", ""]
     lines += ["ADJACENT FINDS:", f"  sludge_check: {adj.get('sludge_check', '')}"]
     for f in adj.get("finds", []):
         lines += [
