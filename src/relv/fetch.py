@@ -42,7 +42,6 @@ def fetch_url(url: str, cfg: Config | None = None, backends: dict | None = None,
     """
     notes = notes if notes is not None else []
     direct_ok = False
-    tavily_used = False
     text = ""
     try:
         r = httpx.get(url, follow_redirects=True, timeout=_FETCH_TIMEOUT, headers={"User-Agent": "Mozilla/5.0 (relv/0.1)"})
@@ -61,7 +60,6 @@ def fetch_url(url: str, cfg: Config | None = None, backends: dict | None = None,
                 if not direct_ok:
                     notes.append("direct fetch failed; resolved via tavily extract")
                 text = t
-                tavily_used = True
         except Exception:
             pass
     if len(text.strip()) < 100:
