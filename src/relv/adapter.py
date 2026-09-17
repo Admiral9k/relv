@@ -14,6 +14,7 @@ import json
 import os
 import random
 import re
+import sys
 import time
 
 import httpx
@@ -102,7 +103,7 @@ def complete(system_prompt: str, user_payload: str, cfg: Config, model: str | No
             if attempt == 4:
                 break
             delay = random.uniform(30, 90)
-            print(f"[adapter] call failed (attempt {attempt}): {e}; retrying in {delay:.0f}s", flush=True)
+            print(f"[adapter] call failed (attempt {attempt}): {e}; retrying in {delay:.0f}s", file=sys.stderr, flush=True)
             time.sleep(delay)
     raise RuntimeError(f"adapter: model call failed after 4 attempts: {last_err}")
 

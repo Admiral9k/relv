@@ -305,7 +305,20 @@ def test_fetch_url_notes_tavily_fallback(monkeypatch):
     assert any("direct fetch failed" in n and "tavily" in n for n in notes)
 
 
-def test_fetch_url_social_notice(monkeypatch):
+def test_fetch_url_social_notice_on_fallback(monkeypatch):
+    """Social URL where direct fetch fails: notice appears (truthful path)."""
+    import relv.fetch as fetchmod
+
+    monkeypatch.setattr(fetchmod.httpx, "get", lambda *a, **k: (_ for _ in ()).throw(httpx.ConnectError("auth wall")))
+    monkeypatch.setattr(fetchmod, "_tavily_extract", lambda url: "x" * 500)
+    monkeypatch.setenv("TAVILY_API_KEY", "tvly-x")
+    notes = []
+    fetchmod.fetch_url("https://x.com/someone/status/123", None, {"resolve": "tavily"}, notes)
+    assert any("X.com requires auth" in n for n in notes)
+
+
+def test_fetch_url_social_direct_success_no_notice(monkeypatch):
+    """Social URL where direct fetch SUCCEEDS: no fallback notice (it would be false)."""
     import relv.fetch as fetchmod
 
     class R:
@@ -316,7 +329,7 @@ def test_fetch_url_social_notice(monkeypatch):
     monkeypatch.setattr(fetchmod.httpx, "get", lambda *a, **k: R())
     notes = []
     fetchmod.fetch_url("https://x.com/someone/status/123", None, None, notes)
-    assert any("X.com requires auth" in n for n in notes)
+    assert not any("X.com requires auth" in n for n in notes)
 
 
 # ---------- v1.1 fix 6: prose-wrapped JSON with braces in strings ----------
