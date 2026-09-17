@@ -1,7 +1,16 @@
 # secrets / env — never commit
 .env
 .env.*
+*.env
+relv.env
 *.key
+
+# user-local config & personal files
+/config.yaml
+/profile.md
+/test-results/
+/article-test-input.md
+/article-out.json
 
 # python
 __pycache__/
