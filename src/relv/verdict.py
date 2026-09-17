@@ -26,9 +26,9 @@ Produce:
 fits, grabs is exactly [{"type": "none", "what": "...", "why": "..."}].
 3. aspects — the underlying mechanisms this thing demonstrates, phrased as \
 transferable ideas ("X: mechanism, not product name").
-4. adjacency_queries — 2-4 natural-language search queries shaped like ASPECTS \
-("what shares my mechanism"), NOT categories ("what else is in this category"). \
-Each query hunts a different aspect in a different domain.
+4. adjacency_queries — exactly {N_QUERIES} natural-language search queries shaped \
+like ASPECTS ("what shares my mechanism"), NOT categories ("what else is in this \
+category"). Each query hunts a different aspect in a different domain.
 
 The sludge test: reject marketing fluff, enterprise listicles, and major-brand \
 press noise; a find earns its place by sharing a MECHANISM the user could port.
@@ -40,6 +40,7 @@ Reply with ONLY a JSON object:
 
 def verdict(extraction: dict, profile: str, cfg: Config, source_desc: str) -> dict:
     """Run the verdict stage. Returns the golden-schema verdict dict."""
+    system = VERDICT_SYSTEM.replace("{N_QUERIES}", str(cfg.n_queries))
     user_payload = f"""# Profile (declared by the user)
 
 {profile}
@@ -51,7 +52,7 @@ Title: {extraction.get('title', '')}
 {extraction.get('content', '')}
 
 Judge this content against the profile. Output the JSON."""
-    v = structured_complete(VERDICT_SYSTEM, user_payload, cfg)
+    v = structured_complete(system, user_payload, cfg)
     for k, default in (
         ("content_summary", ""),
         ("grabs", []),

@@ -30,8 +30,18 @@ a JSON object:
 """
 
 
-def fetch_url(url: str) -> dict:
-    """Fetch a URL's readable text. Tries Tavily extract if direct fetch is thin."""
+_SOCIAL_URL_RE = re.compile(r"^https?://(www\.)?(x\.com|twitter\.com)/", re.IGNORECASE)
+
+
+def fetch_url(url: str, cfg: Config | None = None, backends: dict | None = None, notes: list | None = None) -> dict:
+    """Fetch a URL's readable text. Falls back to Tavily extract when direct
+    fetch is thin — same backend-key logic as the rest of the pipeline.
+
+    Appends a degradation note to `notes` (if given) for every fallback and for
+    social-platform inputs that needed search resolution.
+    """
+    notes = notes if notes is not None else []
+    direct_ok = False
     text = ""
     try:
         r = httpx.get(url, follow_redirects=True, timeout=_FETCH_TIMEOUT, headers={"User-Agent": "Mozilla/5.0 (relv/0.1)"})
@@ -40,19 +50,31 @@ def fetch_url(url: str) -> dict:
             text = _html_to_text(r.text)
         elif r.status_code == 200 and "text" in ctype:
             text = r.text
+        direct_ok = len(text.strip()) >= 100
     except Exception:
         text = ""
-    if len(text.strip()) < 300 and os_tavily():
+    if len(text.strip()) < 300 and _tavily_available(backends):
         try:
-            text = _tavily_extract(url) or text
+            t = _tavily_extract(url)
+            if t.strip():
+                if not direct_ok:
+                    notes.append("direct fetch failed; resolved via tavily extract")
+                text = t
         except Exception:
             pass
     if len(text.strip()) < 100:
         raise RuntimeError(f"fetch: could not retrieve usable text from {url}")
+    if _SOCIAL_URL_RE.match(url):
+        notes.append(
+            "X.com requires auth; resolved via search — paste text for best results"
+        )
     return {"url": url, "fetched_text": text[:20000]}
 
 
-def os_tavily() -> bool:
+def _tavily_available(backends: dict | None = None) -> bool:
+    """Tavily extract fallback honors the same key logic as the search stages:
+    only used when the tavily key is present (same env check as config.available_backends).
+    """
     import os
 
     return bool(os.environ.get("TAVILY_API_KEY"))

@@ -39,7 +39,7 @@ def run_pipeline(text: str, cfg: Config, emit: bool, out_json: bool) -> int:
 
     # --- fetch ---
     if kind == "url":
-        raw = fetch_url(text.strip())
+        raw = fetch_url(text.strip(), cfg, backends, notes)
         source_desc = f"url: {text.strip()}"
     elif kind == "name":
         raw = resolve_name(text.strip(), cfg, backends["resolve"])
@@ -56,15 +56,20 @@ def run_pipeline(text: str, cfg: Config, emit: bool, out_json: bool) -> int:
 
     # --- adjacency ---
     results = adjacency_search(v["adjacency_queries"], cfg, backends["adjacency"], cfg.n_results)
-    adj = adjacency_synth(v["adjacency_queries"], results, profile, v["content_summary"], cfg)
-    adj = validate_find_urls(adj, cfg, backends["resolve"])
+    if results:
+        adj = adjacency_synth(v["adjacency_queries"], results, profile, v["content_summary"], cfg)
+        adj = validate_find_urls(adj, cfg, backends["resolve"])
+    else:
+        # all queries failed/returned nothing — degrade, don't crash the run
+        adj = {"finds": [], "reason": "search unavailable: all queries failed", "sludge_check": ""}
+        notes.append("adjacency degraded: search unavailable (all queries failed)")
     adj["_backend"] = backends["adjacency"]
     adj["_n_raw_results"] = len(results)
 
     # --- emit ---
     flagged = [f["url"] for f in adj.get("finds", []) if f.get("url_status") == "flagged"]
     meta = {
-        "input": text[:300],
+        "input": text[:5000],
         "input_kind": kind,
         "source_desc": source_desc,
         "model": cfg.model,
@@ -90,17 +95,30 @@ def run_pipeline(text: str, cfg: Config, emit: bool, out_json: bool) -> int:
     return 0
 
 
+def _write_default_profile(dir_path: str) -> None:
+    """Write a default profile.md into dir_path if absent (used by `relv init`)."""
+    p = Path(dir_path) / "profile.md"
+    if not p.exists():
+        p.write_text(_DEFAULT_PROFILE.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 def _load_profile(cfg: Config) -> str:
     p = Path(cfg.profile_path)
     if p.exists():
         return p.read_text(encoding="utf-8")
+    print(
+        "relv: no profile.md found; using bundled default — run `relv init` and edit profile.md",
+        file=sys.stderr,
+    )
     return _DEFAULT_PROFILE.read_text(encoding="utf-8")
 
 
 def main(argv: list | None = None) -> int:
     if argv and argv[0] == "init":
         write_default_config(str(Path.cwd()))
+        _write_default_profile(str(Path.cwd()))
         print("wrote config.yaml (edit model/depth/backends; keys come from env)")
+        print("wrote profile.md — edit profile.md; it is YOU the tool grounds against")
         return 0
 
     ap = argparse.ArgumentParser(prog="relv", description="Relevator — profile-grounded relevance triage + adjacency mining")

@@ -33,7 +33,7 @@ backends:
 emit_dir: relv-emissions     # where --emit-md writes files
 """
 
-DEPTH_QUERIES = {"picky": 2, "standard": 3, "broad": 4}
+DEPTH_QUERIES = {"picky": 2, "standard": 3, "broad": 5}
 DEPTH_RESULTS = {"picky": 6, "standard": 12, "broad": 20}
 # picky synthesizes with the strong model regardless of `model:` setting
 PICKY_SYNTH_MODEL = "z-ai/glm-5.3"

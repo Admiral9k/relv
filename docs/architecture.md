@@ -42,7 +42,7 @@ Each stage: structured in → structured out. All model calls go through one ada
 
 In v1 the `models` array holds exactly one entry. Multi-model later = run the same call N times, append entries, add a merge step. The array is the only reservation needed and costs nothing today.
 
-2. **One adapter file.** `complete(system_prompt, user_payload) -> raw`, OpenAI-compatible + base URL. Pipeline stages talk to the adapter, never to an API. No model names, prompt strings, or response parsing in the pipeline body — they live in the adapter and config respectively.
+2. **One adapter file.** `complete(system_prompt, user_payload) -> raw`, OpenAI-compatible + base URL. Pipeline stages talk to the adapter, never to an API. No API endpoints/keys/response-parsing outside adapter.py; prompts live in their stage modules.
 
 ## Deferred (do not build in v1)
 

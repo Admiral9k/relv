@@ -1,0 +1,111 @@
+{
+  "verdict": {
+    "content_summary": "Nous Research ran an autonomous refactor of Hermes, their open-source agent codebase, using a swarm of 1393 worker agents coordinated by a Hermes session. The run was driven by a single /goal command — a standing objective that re-prompts the agent whenever it would otherwise stop — demanding ≥30% LOC reduction, god-file splitting, helper deduplication, and replacement of if/elif chains with dispatch tables, with no human decisions until final PRs. Fifty minutes in, an expired provider auth token killed the run, but workers had continuously committed changes plus structured briefs; a separate Hermes session diagnosed the failure and produced a handoff that the resumed session used to repair unfinished work and continue. Concrete outcome: the largest file (gateway/run.py) split into message-dispatch, streaming, RPC, and lifecycle modules.",
+    "grabs": [
+      {
+        "type": "aspect",
+        "what": "The /goal standing-objective loop: a persistent directive that re-prompts the agent each time it would otherwise terminate, keeping a long autonomous run on-task without human nudges",
+        "why": "You run local AI agents for coding and research; this is loop-control logic you can port straight into your own agent harness — it's a prompt/loop pattern, not a product dependency, and Hermes being open-source means the implementation is inspectable rather than a subscription"
+      },
+      {
+        "type": "aspect",
+        "what": "Commit-and-brief checkpointing with diagnostic handoff: workers continuously commit changes plus structured briefs so state survives process death, and a fresh session audits the wreckage and writes the handoff the resumed session consumes",
+        "why": "This is your structured in/out philosophy applied to crash recovery — briefs as machine-readable artifacts, not prose logs — and it makes long-running local agent jobs resumable without any managed orchestrator, fitting your self-hosted, cheap-beats-fancy constraint"
+      },
+      {
+        "type": "aspect",
+        "what": "Dispatch tables over if/elif routing as a codified refactor target: specifying measurable outcomes (LOC %, file splits, dedup) and letting agents plan the how",
+        "why": "Directly applicable to your own code — model routing and the markdown-in/queues-out ingest pipeline are exactly the kind of conditional-chain hotspots this pattern replaces, and the goal-as-contract framing (measurable targets, no prescribed method) is a reusable way to brief any coding agent"
+      }
+    ],
+    "aspects": [
+      "Standing-objective loop: a persistent goal directive that re-prompts an agent whenever it would otherwise stop, sustaining long autonomous runs without human intervention",
+      "Crash-tolerant swarm state: workers commit incremental changes plus structured briefs continuously, so any fresh session can reconstruct and resume the work",
+      "Diagnostic-then-handoff recovery: a separate session audits the failure and emits a handoff artifact that the resumed session treats as its new input",
+      "Dispatch-table routing: replacing if/elif conditional chains with table-driven dispatch as a mechanical, agent-executable refactor",
+      "Goal-as-contract delegation: specifying measurable outcomes (LOC reduction, file splits, dedup) while leaving the method to the agents"
+    ],
+    "adjacency_queries": [
+      "agent harness patterns that re-prompt the model when it tries to stop, for sustaining long autonomous coding sessions locally",
+      "crash-resumable pipeline designs that checkpoint structured state so a new process can resume where a dead one left off",
+      "table-driven dispatch design replacing conditional chains in routers, interpreters, and plugin systems"
+    ],
+    "models": [
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "verdict": "aspect",
+        "why": "You run local AI agents for coding and research; this is loop-control logic you can port straight into your own agent harness — it's a prompt/loop pattern, not a product dependency, and Hermes being open-source means the implementation is inspectable rather than a subscription; This is your structured in/out philosophy applied to crash recovery — briefs as machine-readable artifacts, not prose logs — and it makes long-running local agent jobs resumable without any managed orchestrator, fitting your self-hosted, cheap-beats-fancy constraint"
+      }
+    ],
+    "confidence": null
+  },
+  "adjacency": {
+    "finds": [
+      {
+        "name": "Effective Harnesses for Long-Running Agents (research note)",
+        "url": "https://github.com/anxiong2025/harness/blob/main/docs/research/251126_anthropic_effective_harnesses.md",
+        "what_it_is": "A markdown research note consolidating Anthropic's engineering guidance and reference implementation for long-running agent harnesses: init sessions, context management across sessions, and structured handoffs between runs.",
+        "different_angle": "Shares the triaged run's core mechanism — a standing objective sustained by harness structure, plus crash-to-handoff-to-resume via structured state — but from the angle of the canonical minimal pattern: one agent with explicit init/resume files, versus Nous's bespoke 1393-worker swarm. Shows the same recovery flow is achievable without a fleet.",
+        "why_relevant_to_profile": "Plain markdown in a git repo, exactly his plain-text-first medium. The init/handoff file conventions are mechanisms he can lift directly into his local agent pipelines and markdown queues — no vendor, no account, nothing cloud-locked.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "agent-resume",
+        "url": "https://www.theresumeagent.com",
+        "what_it_is": "Zero-dependency Python library (MIT, on PyPI) that checkpoints long-running agent/batch jobs to a JSONL store so a crashed run resumes at the next item — crash on item 47, resume at 48.",
+        "different_angle": "Same survival mechanism the Hermes run relied on — durable structured state letting a fresh process pick up mid-job — but at item-level batch granularity with a dead-simple JSONL store, instead of session-level LLM-written briefs plus a sibling session doing the diagnosis.",
+        "why_relevant_to_profile": "JSONL state is plain-text he can diff and grep; zero deps and MIT fit cheap-beats-fancy; it composes as the resumability layer for his markdown-in/structured-queues-out ingest pipeline rather than demanding a framework adoption.",
+        "original_url": "https://github.com/MukundaKatta/agent-resume",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "Checkpointing — Delivery Guarantees and Fault Tolerance, Lesson 3",
+        "url": "https://rustycloud.org/data_pipelines_track/module-05-delivery-guarantees-and-fault-tolerance/lesson-03-checkpointing.html",
+        "what_it_is": "A lesson distilling Kleppmann's Designing Data-Intensive Applications ch.11 and Petrov's Database Internals ch.5: checkpoint boundaries, microbatching, durable state, and exactly-once semantics via idempotency.",
+        "different_angle": "The crash-resume mechanism from the distributed-data-systems domain instead of agent-harness lore — checkpoint placement and delivery guarantees as formal machinery, explaining why the workers' continuous commits plus structured briefs actually produced recoverable state.",
+        "why_relevant_to_profile": "Pure mechanism to port: checkpoint boundaries and idempotency keys map straight onto his self-hosted ingest pipeline and agent loops. Theory, not a product — nothing to subscribe to.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "Refactoring: Express Selections as Tables",
+        "url": "https://adamtornhill.substack.com/p/refactoring-express-selections-as",
+        "what_it_is": "Adam Tornhill's refactoring essay on converting conditional selection logic into data tables — code as data pretending to be logic — with concrete before/after practice.",
+        "different_angle": "The human-craft version of the exact transformation the Hermes workers automated (if/elif chains to dispatch tables, god-file splitting): same underlying mechanism, executed by hand as a repeatable pattern rather than by an agent swarm.",
+        "why_relevant_to_profile": "Doubles as his evaluation rubric for agent-produced refactor PRs — is the table really data, is behavior preserved — and a pattern to apply in his own Python tools where command-routing conditionals accumulate.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "Anatomy of a harness: building a coding agent that can run for hours",
+        "url": "https://mastra.ai/blog/anatomy-of-a-coding-agent",
+        "what_it_is": "Engineering deep-dive on everything wrapping an agent loop so it survives hours: conversation-as-channel, compaction strategy, observational memory, subagents, and an ordered tool-approval chain.",
+        "different_angle": "The /goal re-prompt is only one bolt of the harness; this covers the rest of the machine — especially compaction (where coding agents go to die) and memory — which the triaged summary skips but any multi-hour local run needs.",
+        "why_relevant_to_profile": "A mechanism inventory for building his own long-running local agents: which pieces (compaction policy, approval chain, memory) he must implement versus borrow, all with the structured in/out he demands. Vendor-adjacent blog but mechanism-dense engineering, not a pitch.",
+        "url_status": "flagged"
+      }
+    ],
+    "sludge_check": "Dropped three results hosted on the github.laiyagushi.com mirror domain (weardo/harness, areeves/revenant, struct0x/dispatcher) — unverifiable provenance and thin READMEs. Dropped the two-phase initializer+coding pattern that appeared as near-duplicates on nexu-io and jsmanifest (syndicated content-farm duplication). Dropped the Medium GAN-inspired essay and the Stackademic Python dispatch-tables post as long-form low-portability filler. Dropped the author's triplicate DEV.to articles promoting agent-resume (kept the repo itself). Dropped vendor docs (LazyBridge, Spark Pipeline Framework, AFK checkpoint-schema) as product documentation rather than portable mechanisms. Dropped 0-star forks and blog-companion repos (chandu/cwc fork, mlobo two-pulse companion, empty pkg.go.dev LongHorizon page). Kept mastra.ai despite vendor-blog status because it is a mechanism-dense engineering writeup, not a listicle.",
+    "_backend": "exa",
+    "_n_raw_results": 36
+  },
+  "_meta": {
+    "input": "I want a massive simplification set of PRs. or a single monolithic PR. I want LOC to drop dramatically. Minimum 30% overall. I want god files broken up. I want simplification across the board. I want unification of helpers and methods that can be reused. I want less if-if-if-if-if-if-else routing. I",
+    "input_kind": "name",
+    "source_desc": "bare name: 'I want a massive simplification set of PRs. or a single monolithic PR. I want LOC to drop dramatically. Minimum 30% overall. I want god files broken up. I want simplification across the board. I want unification of helpers and methods that can be reused. I want less if-if-if-if-if-if-else routing. I' (resolved via tavily)",
+    "model": "z-ai/glm-5.3-flash",
+    "synthesis_model": "z-ai/glm-5.3-flash",
+    "depth": "standard",
+    "backends": {
+      "resolve": "tavily",
+      "adjacency": "exa"
+    },
+    "degradation_notes": [],
+    "flagged_urls": [
+      "https://github.com/anxiong2025/harness/blob/main/docs/research/251126_anthropic_effective_harnesses.md",
+      "https://rustycloud.org/data_pipelines_track/module-05-delivery-guarantees-and-fault-tolerance/lesson-03-checkpointing.html",
+      "https://adamtornhill.substack.com/p/refactoring-express-selections-as",
+      "https://mastra.ai/blog/anatomy-of-a-coding-agent"
+    ],
+    "profile_path": "C:\\Users\\dstee\\Hermes-projects\\relv\\profile.md",
+    "when": "2026-09-17T18:33:46.397029+00:00"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "verdict": {
+    "content_summary": "An engineering postmortem by NousResearch's Teknium on a ~19-hour autonomous run in which Hermes Agent, the company's open-source coding agent, refactored its own 1M+ line Python repo: an orchestrator partitioned the code into 36 non-overlapping work packages, 1,393 subagents (218 concurrent) executed them in separate git worktrees under a standing /goal objective, and the merged result cut non-test lines 34.4%, broke up god files, and replaced if/elif routing with dispatch tables. Coordination rested on three mechanisms: markdown 'skills' the agent writes and revises from its own daily mistakes, cheap mechanical verification gates (byte-identical CLI --help output, unchanged tool JSON schemas, a commit after each verified step), and commit-based checkpointing that let a separate session diagnose an auth-token failure and resume workers from saved commits. The post is candid about regressions reviewers caught that tests missed (removed public names, a suppress() rewrite that changed exception handling at ~65 sites) and about tradeoffs (more modules, slower imports), and the whole thing ran in one Python process on an i7 desktop with 64 GB RAM using remote inference — roughly $25k against a $150k–$1.8M manual estimate.",
+    "grabs": [
+      {
+        "type": "product",
+        "what": "Hermes Agent (NousResearch's open-source coding agent)",
+        "why": "Open-source, ran as a single local Python process on modest desktop hardware with remote inference — matches the profile's self-hosted, BYO-key, cheap-beats-fancy stack. Worth evaluating as the orchestrator for their own large refactor or document-processing runs instead of hand-rolling fan-out on top of their existing local agents."
+      },
+      {
+        "type": "aspect",
+        "what": "Orchestrator-worker fan-out with git worktree isolation",
+        "why": "Directly portable to their local multi-agent setup: partition work into non-overlapping packages, brief each worker with interfaces-to-preserve and required checks, and keep the top agent to assignment-writing, report-reading, and merging. Workers are just model calls, so it composes with their OpenRouter multi-model routing — cheap small models on leaves, stronger model coordinating."
+      },
+      {
+        "type": "aspect",
+        "what": "Skills as self-revising markdown memory",
+        "why": "This is the profile's plain-text-first ethos made operational: the agent records procedures and corrections into markdown docs that persist across tasks and can be handed to other agents. Ports cleanly into their markdown-in/structured-queues ingest pipeline as an accumulating knowledge layer — prose files that are also machine-readable state."
+      },
+      {
+        "type": "aspect",
+        "what": "Mechanical verification gates plus commit-per-step checkpointing",
+        "why": "Byte-for-byte --help diffs, identical JSON schemas, and a commit after every verified step are what made a 19-hour unattended run possible and resumable after a token expiry — no new accounts, no cloud, just git and diff. The same cheap gates would let their self-hosted pipelines and agents run long without babysitting, and the honest regression log (what tests missed) is a checklist for what gates to add."
+      }
+    ],
+    "aspects": [
+      "Standing-objective delegation: one persistent goal command replaces per-task prompting; worker briefs derive from the objective plus accumulated guidance",
+      "Git worktree isolation for concurrent agents: each worker owns a checkout, coordinator only writes assignments, reads reports, and merges verified branches",
+      "Self-revising markdown skills: agent-authored procedure and correction notes that compound across tasks and transfer between agents",
+      "Mechanical interface verification: byte-for-byte diffs of CLI --help output and tool JSON schemas as cheap merge gates",
+      "Commit-per-verified-step checkpointing: long agent runs become resumable, with a separate diagnostic session writing the handoff",
+      "Operational feedback into standing rules: failures at scale (duplicate language servers, memory leaks) become repo guidance automatically fed to future workers"
+    ],
+    "adjacency_queries": [
+      "agent orchestrators that split a large codebase task into non-overlapping work packages and run parallel workers in isolated git worktrees",
+      "AI agents that write and revise their own markdown playbooks from their mistakes and reuse them across future sessions",
+      "golden-master regression testing that diffs CLI output or serialized JSON schemas byte-for-byte before allowing a commit",
+      "resumable batch pipelines that checkpoint progress per item so a crashed run picks up from saved state"
+    ],
+    "models": [
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "verdict": "product",
+        "why": "Open-source, ran as a single local Python process on modest desktop hardware with remote inference — matches the profile's self-hosted, BYO-key, cheap-beats-fancy stack. Worth evaluating as the orchestrator for their own large refactor or document-processing runs instead of hand-rolling fan-out on top of their existing local agents.; Directly portable to their local multi-agent setup: partition work into non-overlapping packages, brief each worker with interfaces-to-preserve and required checks, and keep the top agent to assignment-writing, report-reading, and merging. Workers are just model calls, so it composes with their OpenRouter multi-model routing — cheap small models on leaves, stronger model coordinating."
+      }
+    ],
+    "confidence": null
+  },
+  "adjacency": {
+    "finds": [
+      {
+        "name": "agentree (ydah/agentree)",
+        "url": "https://agentree.space",
+        "what_it_is": "A safety-oriented Rust CLI that runs independent coding tasks each in its own git branch, worktree, and index, under a per-task validation contract; changes sync explicitly and land only via a fast-forward merge you can explain.",
+        "different_angle": "Shares the postmortem's core isolation mechanism (non-overlapping work executed in separate git worktrees) but strips out the LLM autonomy entirely: it is the deterministic, mechanical half of the Hermes pattern — isolation, validation gates, reviewable landing — as a single-purpose CLI you drive yourself instead of an orchestrator spawning 1,393 subagents.",
+        "why_relevant_to_profile": "Exactly the kind of small, single-purpose, composable tool the profile favors: a Rust CLI with no services to run, usable offline from his own scripts or local agents. The 'validation contract + fast-forward-only landing' idea is a mechanism he can port to gate what his own agents are allowed to commit.",
+        "original_url": "https://github.com/ydah/agentree/blob/main/README.md",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "playbookd (lucas-stellet/playbookd)",
+        "url": "https://github.com/lucas-stellet/playbookd",
+        "what_it_is": "A standalone Go library giving agents procedural memory: persistent, versioned playbooks with confidence-scored outcomes, so an agent finds and refines existing playbooks instead of rediscovering solutions on every run.",
+        "different_angle": "Shares the 'agent writes and revises markdown playbooks from its own mistakes' mechanism, but generalizes it out of a monolithic coding agent into an embeddable library — and upgrades the revision loop with confidence scoring over outcomes, where Hermes simply hand-revised its skills from daily mistakes.",
+        "why_relevant_to_profile": "Directly portable to his local research/coding agents: playbooks are plain versioned text matching his markdown-first notes, it is a library rather than a framework or SaaS, and the confidence-weighted retrieval pattern would sit naturally on his SQLite-over-managed-DBs stack.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "cmd-golden-tests skill (Olshansk/agent-skills)",
+        "url": "https://github.com/olshansk/agent-skills/blob/main/skills/cmd-golden-tests/SKILL.md",
+        "what_it_is": "A markdown SKILL.md (Claude-skills format, just frontmatter plus prose) that teaches a coding agent to set up and extend golden/snapshot tests: fixture design, Makefile targets, snapshot storage, diff workflow, and a disciplined update protocol.",
+        "different_angle": "Shares two mechanisms from the postmortem at once — markdown skills as the carrier of agent knowledge, and golden-master verification gates — but flips the origin: instead of skills evolving organically from an agent's own daily failures mid-run, this is a curated, human-authored skill that installs the verification gate into any agent up front.",
+        "why_relevant_to_profile": "He can drop this file straight into his local agents; it is the postmortem's 'cheap mechanical verification before commit' pattern packaged as a composable plain-text artifact rather than a product — no account, no cloud, works offline, composes with his existing markdown skill files.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "agent-resume (MukundaKatta/agent-resume)",
+        "url": "https://github.com/MukundaKatta/agent-resume",
+        "what_it_is": "A zero-dependency Python library that checkpoints long-running agent jobs per item into a JSONL store, so a run that crashes on item 47 resumes at item 48 instead of starting over.",
+        "different_angle": "Shares the checkpoint-and-resume mechanism but swaps the substrate: Hermes checkpointed via git commits inside a code refactor and needed a separate session to diagnose a failure and resume workers; agent-resume uses a plain append-only JSONL ledger per work item, generalized to any agent job (issue triage, document processing), not just code.",
+        "why_relevant_to_profile": "Zero deps, JSONL, plain text — precisely his ingest-pipeline idiom of 'markdown in, structured queues out.' The per-item checkpoint ledger is a mechanism he can port to make his own batch document-processing runs crash-safe without a queue service or managed database.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "goldenbox (mustard-mh/goldenbox)",
+        "url": "https://github.com/mustard-mh/goldenbox",
+        "what_it_is": "A Go tool for black-box golden testing with full state diffs: it boots your real service binary against containerized MySQL/PostgreSQL/Redis, records state, and fails on any deviation from the golden snapshot.",
+        "different_angle": "Shares the golden-master verification mechanism but moves the diff from ephemeral output (byte-identical CLI --help text, unchanged tool JSON schemas) to persistent state — whole-store snapshots before and after — targeting exactly the class of regressions the Hermes reviewers caught by eye that output diffs and tests missed (e.g., the suppress() rewrite changing behavior at ~65 call sites).",
+        "why_relevant_to_profile": "He self-hosts services and prefers mechanical checks over trust; a single Go binary doing state-level golden tests is a cheap gate he can wire into CI or an agent loop for his own stack, and the 'diff full state, not just output' idea ports to verifying agent edits to anything stateful.",
+        "url_status": "flagged"
+      }
+    ],
+    "sludge_check": "Filtered out: markdown-agent-studio (npm registry entry plus GitHub dup) — a 23.8MB React/Vite visual IDE with 18 dependencies, GUI product flavor that conflicts with a terminal-first profile; achalasawa/agent-orchestrator — a 0-star fork duplicate of AgentWrapper/agent-orchestrator; AgentWrapper/agent-orchestrator itself — legitimate and popular (7.5k stars) but a large TypeScript orchestrator in the same domain as the triaged post with no distinct mechanism angle, framework-weight rather than a small composable tool; dimileeh/agent-workspace-fabric — Docker-Compose control plane with PR-monitor loops and a product homepage (aira.pro), platform-marketing flavor; azena-ai/self-improving-loop — template pack with 'battle-tested in production' copy and a company homepage, thin; QASkills.sh approval-testing guide — generic SEO-style testing blog content; muyki-labs/laravel-resumable-jobs — PHP/Laravel, off-stack; areeves/revenant — served from a non-canonical mirror domain (github.laiyagushi.com, not github.com), likely a scrape/proxy, discarded as untrustworthy; taylorwilsdon/google_workspace_mcp PR #843 — a genuine instance of schema-snapshot golden tests but a single thin PR artifact rather than a portable find; IronFighter23/safe-state, doruirimescu/stateful-data-processor, and AnsonDev42/batchor — reasonable checkpointing tools but redundant with agent-resume (batchor is also OpenAI-batch-specific); Ax playbook docs and jlevy/tbd golden-testing guidelines — framework-tied documentation, weaker as standalone mechanisms than the picks above. All five selected finds are small, open-source, offline-capable, and require no account.",
+    "_backend": "exa",
+    "_n_raw_results": 24
+  },
+  "_meta": {
+    "input": "---\ntitle: \"Refactoring Hermes with 1,393 agents\"\nsource: \"hidden for now\"\nauthor:\n  - \"[[Teknium]]\"\npublished: 2026-09-15\ncreated: 2026-09-17\ndescription: \"Hermes Agent refactored its own codebase: 1,393 subagents over about nineteen active hours cut non-test Python by 34.4%, for roughly $19,300 in",
+    "input_kind": "text",
+    "source_desc": "pasted text",
+    "model": "z-ai/glm-5.3-flash",
+    "synthesis_model": "z-ai/glm-5.3",
+    "depth": "picky",
+    "backends": {
+      "resolve": "tavily",
+      "adjacency": "exa"
+    },
+    "degradation_notes": [],
+    "flagged_urls": [
+      "https://github.com/lucas-stellet/playbookd",
+      "https://github.com/olshansk/agent-skills/blob/main/skills/cmd-golden-tests/SKILL.md",
+      "https://github.com/MukundaKatta/agent-resume",
+      "https://github.com/mustard-mh/goldenbox"
+    ],
+    "profile_path": "C:\\Users\\dstee\\Hermes-projects\\relv\\profile.md",
+    "when": "2026-09-17T17:12:32.130213+00:00"
+  }
+}

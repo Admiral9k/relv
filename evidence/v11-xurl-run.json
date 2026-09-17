@@ -1,0 +1,116 @@
+{
+  "verdict": {
+    "content_summary": "An X thread documenting the AGENTS.md convention as practiced by the Hermes agent: a project-root markdown file that acts as the agent's local source of truth — how the project works, run/test commands, conventions, and no-touch zones — so every session starts from the same foundation instead of rebuilding context from scratch. Replies add three portable mechanisms: a self-briefing bootstrap prompt where the agent reads the README, build files, and recent commits, asks the user what the repo couldn't tell it, and drafts the file itself; a pointer-file interop trick (a CLAUDE.md whose entire content is '@ AGENTS.md'); and hierarchical resolution where the agent walks up to five directory levels and layers per-subdirectory instructions (backend/, frontend/) over parent-level ones. Practitioner discussion of a file convention, not product marketing.",
+    "grabs": [
+      {
+        "type": "product",
+        "what": "AGENTS.md — a plain markdown file at the project root declaring how the project works, how to run/test it, conventions, and what the agent must never touch",
+        "why": "Fits the stack exactly: single static file, no account, no cloud, versioned with the code. Dropping one into each project your local coding/research agents touch means sessions start from structured context instead of re-pasted prose — markdown in, structured behavior out."
+      },
+      {
+        "type": "aspect",
+        "what": "Self-briefing bootstrap: the agent reads repo artifacts (README, build files, commit log), interviews the user only for the unstated, then drafts its own context file",
+        "why": "A directly portable pipeline pattern — machine ingests structured artifacts, asks the human only about the gap, emits structured markdown. Wire the same prompt shape into your local agents to auto-generate context files for any project or document corpus in your ingest queue."
+      },
+      {
+        "type": "aspect",
+        "what": "Pointer-file indirection: thin adapter files whose content is just '@ AGENTS.md' so differently-named agent tools all resolve to one canonical file",
+        "why": "Pure small-composable-tool ethos: one source of truth, per-consumer shims. Applies to any multi-agent setup where tools expect differently-named config files — write the adapter, not a second copy that drifts."
+      },
+      {
+        "type": "aspect",
+        "what": "Hierarchical context resolution: walk up the directory tree (bounded levels) and layer nearest-scope instructions over parent-scope ones",
+        "why": "Port this scoping mechanism to your own pipelines — per-directory instructions for nested projects (backend vs frontend, or per-corpus subdirs in your ingest tree) without a global config blob. Same semantics as .gitignore/.editorconfig, applied to agent behavior."
+      }
+    ],
+    "aspects": [
+      "Project-local plain-text context file: the agent's operating manual lives as markdown in the repo, versioned alongside the code, not trapped in a chat session",
+      "Self-briefing bootstrap: agent ingests existing structured artifacts, interviews the user for what they can't reveal, and emits its own context doc",
+      "Pointer-file indirection: '@ AGENTS.md'-style shim files let multiple consumers share one canonical config without duplication",
+      "Hierarchical context resolution: bounded walk up the directory tree, nearest-scope instructions layered over parent-scope, .editorconfig-style cascade for agent instructions"
+    ],
+    "adjacency_queries": [
+      "what other open-source agents treat a plain markdown file in the repo root as the source of truth for project context instead of cloud-synced settings",
+      "what CLI tools bootstrap their own configuration by scanning existing project files and asking the user targeted questions about the gaps",
+      "what systems resolve configuration hierarchically by walking up the directory tree and merging nearest-scope rules over parent rules like .editorconfig or .gitignore"
+    ],
+    "models": [
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "verdict": "product",
+        "why": "Fits the stack exactly: single static file, no account, no cloud, versioned with the code. Dropping one into each project your local coding/research agents touch means sessions start from structured context instead of re-pasted prose — markdown in, structured behavior out.; A directly portable pipeline pattern — machine ingests structured artifacts, asks the human only about the gap, emits structured markdown. Wire the same prompt shape into your local agents to auto-generate context files for any project or document corpus in your ingest queue."
+      }
+    ],
+    "confidence": null
+  },
+  "adjacency": {
+    "finds": [
+      {
+        "name": "agent-memory",
+        "url": "https://github.com/xChuCx/agent-memory/blob/main/README.md",
+        "what_it_is": "Local, git-native project memory for AI coding agents: plain Markdown committed to the repo is the memory store, with three MCP tools plus a CLI that read/write task state, decisions, conventions, pitfalls, and per-module facts. Branch-aware, secret-safe, explicitly no cloud and no vector DB.",
+        "different_angle": "Shares the 'markdown in the repo is the agent's source of truth' mechanism, but AGENTS.md is static instructions authored once, while agent-memory is dynamic state the agent reads and writes across sessions — it evolves the convention from a briefing document into working memory with git as the sync layer.",
+        "why_relevant_to_profile": "Matches your stack point-for-point: local-first, no cloud, git as sync, structured MCP/CLI interface (data out, not prose), no account required. It composes with your OpenRouter-routed agents as just another local tool rather than a subscription.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "agentvault",
+        "url": "https://agent-vault.mintlify.app",
+        "what_it_is": "A local-first knowledge OS where markdown files are the canonical source of truth for notes, decisions, research, tasks, and agent-readable context — with SQLite used purely as a rebuildable index/cache for search, retrieval, and API responses.",
+        "different_angle": "Same markdown-as-truth mechanism, but from the architecture angle: instead of one convention file, it demonstrates the derived-index pattern — markdown is canonical, the database is disposable state you can rebuild at any time. That split is the portable part.",
+        "why_relevant_to_profile": "This is literally your declared architecture: markdown in, structured queues out, SQLite over managed databases, everything local. Even if you never adopt the tool, the 'markdown truth + rebuildable SQLite index' pattern is a mechanism to lift straight into your ingest pipeline.",
+        "original_url": "https://github.com/dporkka/agentvault",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "projectsmd",
+        "url": "https://github.com/am423/projectsmd",
+        "what_it_is": "A MIT-licensed single-file markdown standard for agent-human project collaboration: one .md file captures everything about a project from scoping through execution so agents can resume exactly where work left off, with small Python/Rust tooling around it.",
+        "different_angle": "Same genre as AGENTS.md — one plain markdown file as a machine-readable contract, convention over tooling — but pointed at state handoff and progress rather than project rules and no-touch zones. It's the 'pick up where you left off' complement to the 'how this repo works' file.",
+        "why_relevant_to_profile": "You favor small single-purpose conventions you can compose, and this is a copyable spec, not a product to buy. Dropping the file format into your markdown-in/structured-out pipeline gives queues resumable project state with zero new dependencies.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "EditorConfig File Format specification",
+        "url": "https://docs.editorconfig.org/en/master/editorconfig-format.html",
+        "what_it_is": "The canonical spec for EditorConfig: INI files with filepath-glob section scoping, resolved by walking up the directory tree from the file being processed, with a root marker file and nearest-file-wins precedence.",
+        "different_angle": "This is the long-established prior art for the thread's hierarchical-resolution mechanism: the same walk-up-the-tree, nearest-scope-overrides-parent layering — proven in the editor-settings domain. The glob-section and root-flag constructs are directly reusable designs for per-subdirectory AGENTS.md files.",
+        "why_relevant_to_profile": "You value mechanisms over products, and this is the smallest complete reference spec for hierarchical file resolution. If you implement 5-level AGENTS.md layering in your own tooling, these are the semantics to copy — the root marker is the detail most reimplementations forget.",
+        "url_status": "ok"
+      },
+      {
+        "name": "adobe/himl",
+        "url": "https://github.com/adobe/himl",
+        "what_it_is": "Adobe's open-source Apache-2.0 Python library (134★) for hierarchical YAML configuration: merges config files across ordered layers so more-specific scopes override defaults, with value expansion and optional secrets/SSM handling.",
+        "different_angle": "Attacks the same layered-resolution mechanism as the thread's directory-walking AGENTS.md hierarchy, but from the config-management domain — and as a working merging implementation in code you can read and lift, rather than an agent behavior you prompt for. Its defaults-with-overrides ordering is the generic form of 'subdirectory rules beat parent rules.'",
+        "why_relevant_to_profile": "Python, self-hostable, no per-seat anything. If your agent tooling needs nearest-scope resolution — per-project and per-subdirectory overrides layered over global defaults — this is runnable code implementing exactly that merge semantics, ready to port.",
+        "url_status": "flagged"
+      }
+    ],
+    "sludge_check": "Discarded Vectorion/codestack-automator — pure marketing sludge ('Revolutionize Your Dev Workflow 2026... 100+ Tech Stacks Instantly'), HTML-only repo with 470 of ~476 contributions from github-actions bot. Discarded relsas/markplane as a 0-star fork of the real project (zerowand01/markplane, 178★). Collapsed the crowded CLAUDE.md-generator set (claude-scout, codespec, claude-gen at 3 weekly downloads, claude-init, claude-project-setup-plugin, the one-commit manja316 wizard created-and-pushed the same minute) — they all re-implement the thread's self-briefing bootstrap prompt as CLIs with near-zero traction, so they're redundant with the triaged content. Skipped coretexthq/coretext (2★, 'License: Other', vague event-sourced framing), Entelligentsia/forge (meta-generator doc page), the DeepWiki shadcn page (third-party docs about an unrelated tool's init flow), and the four duplicate .gitignore doc mirrors (git-scm ×2, dscho, kernel.org — canonical but redundant with the EditorConfig pick). ZeroSpec is genuinely on-mechanism but its angle (yet another repo-root markdown spec framework) overlaps the triaged content too closely to earn a slot.",
+    "_backend": "exa",
+    "_n_raw_results": 36
+  },
+  "_meta": {
+    "input": "https://x.com/hermeswatcher/status/2100351525398982661",
+    "input_kind": "url",
+    "source_desc": "url: https://x.com/hermeswatcher/status/2100351525398982661",
+    "model": "z-ai/glm-5.3-flash",
+    "synthesis_model": "z-ai/glm-5.3-flash",
+    "depth": "standard",
+    "backends": {
+      "resolve": "tavily",
+      "adjacency": "exa"
+    },
+    "degradation_notes": [
+      "X.com requires auth; resolved via search — paste text for best results"
+    ],
+    "flagged_urls": [
+      "https://github.com/xChuCx/agent-memory/blob/main/README.md",
+      "https://github.com/am423/projectsmd",
+      "https://github.com/adobe/himl"
+    ],
+    "profile_path": "C:\\Users\\dstee\\Hermes-projects\\relv\\profile.md",
+    "when": "2026-09-17T18:38:05.123890+00:00"
+  }
+}

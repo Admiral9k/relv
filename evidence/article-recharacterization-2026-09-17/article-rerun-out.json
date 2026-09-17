@@ -1,0 +1,120 @@
+{
+  "verdict": {
+    "content_summary": "A dense postmortem by Teknium (Nous Research) on running their open-source Hermes coding agent to refactor its own 1M+ line Python codebase: a /goal standing objective drove a 19-hour run that dispatched 1,393 subagents (218 concurrent) across git worktrees in a 3-level delegation tree, all in one local Python process with remote inference. The orchestrator partitioned the code into 36 non-overlapping groups, generated written worker briefs from the objective plus an auto-accumulated Markdown skill document capturing months of the author's procedures and verification habits, and verified via byte-for-byte CLI --help diffs, identical tool JSON schemas, and commit-per-verified-step. Result: 34.4% non-test line reduction, god files broken up, ~$25k in model spend vs a $150k–$1.8M manual estimate, and a token-per-lookup metric (2,218 → 993) quantifying context-efficiency gains. Honest failure accounting: provider token expiry mid-run handled by a separate diagnostic session preparing a resume handoff, and community review catching regressions the tests missed (removed plugin-importable names, a suppress() rewrite changing exception handling at ~65 sites).",
+    "grabs": [
+      {
+        "type": "aspect",
+        "what": "The auto-written Markdown skill document ('hermes-agent-dev') that accumulates the author's procedures, corrections, and verification habits across sessions and gets distributed to other engineers' setups",
+        "why": "This is the single most portable idea for a markdown-first builder: your agents should maintain their own plain-text skill files in your existing pipeline, recording what worked and what you corrected, so the next task or agent starts with that context. It slots directly into a markdown-in/structured-queues-out ingest flow with zero new infrastructure."
+      },
+      {
+        "type": "aspect",
+        "what": "Worktree fan-out orchestration: git worktrees as per-worker isolation, non-overlapping partition briefs (interfaces to preserve, required checks), and a coordinator-only top agent with hierarchical delegation",
+        "why": "Directly portable to their local coding agents without buying anything — git worktrees are free, and the brief format (code to simplify, interfaces to preserve, required checks) is a structured in/out contract that matches their 'data is for machines' value. The single-Python-process + 64GB desktop + remote inference setup also validates their cheap-beats-fancy instinct."
+      },
+      {
+        "type": "aspect",
+        "what": "Verification harness: byte-for-byte comparison of CLI --help output and tool JSON schemas before/after, commit after each verified step, and a separate agent session diagnosing crashes and preparing resume-from-commits handoffs",
+        "why": "Steals cleanly into any of their agent pipelines: behavioral diffing of deterministic outputs is a cheap regression net for automated changes, commit-per-verified-step gives free crash recovery, and the diagnose-then-handoff pattern turns a killed run into a resumable one — all mechanisms, no product."
+      },
+      {
+        "type": "product",
+        "what": "Hermes Agent itself (open-source, self-hostable coding agent with /goal standing-objective mode)",
+        "why": "Fits their stack on paper — open-source, BYO-inference, runs on modest local hardware with remote models via their existing OpenRouter-style routing. Caveat: the headline $25k Claude run is not their budget, and they likely already have a coding agent; adopt for the /goal loop and skill-file system rather than as a replacement."
+      }
+    ],
+    "aspects": [
+      "Standing-objective loop: a command that converts one-shot task completion into a persistent goal the agent keeps working toward without stopping for permission",
+      "Auto-accumulating skill file: the agent records procedures, corrections, and verification habits in a Markdown doc that compounds across tasks and engineers",
+      "Worktree fan-out: git worktrees as cheap isolation for parallel agents, with written briefs specifying interfaces-to-preserve and required checks per partition",
+      "Coordinator-only top agent: hierarchical delegation where the root handles routing exclusively and workers may spawn sub-workers",
+      "Behavioral diff verification: byte-for-byte comparison of deterministic outputs (CLI help, JSON schemas) as a refactor regression net, with a commit after each verified step",
+      "Crash handoff: a separate agent session diagnoses the failure and prepares a resume-from-saved-commits brief instead of restarting",
+      "Token-per-lookup metric: simulated symbol lookups (4,000) before/after to quantify a refactor's context-window efficiency, not just line counts",
+      "Human review as the net for what tests miss: community reviewers caught semantic regressions (removed public names, exception-handling rewrites) invisible to automated checks"
+    ],
+    "adjacency_queries": [
+      "agent memory systems that accumulate lessons in plain markdown files across sessions and get shared between agents",
+      "running multiple parallel coding agents isolated in git worktrees with a coordinator-worker delegation pattern",
+      "verifying automated refactors by diffing CLI output and API schemas byte-for-byte before and after",
+      "measuring context window token cost of codebase navigation to quantify whether a refactor actually improved LLM readability"
+    ],
+    "models": [
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "verdict": "aspect",
+        "why": "This is the single most portable idea for a markdown-first builder: your agents should maintain their own plain-text skill files in your existing pipeline, recording what worked and what you corrected, so the next task or agent starts with that context. It slots directly into a markdown-in/structured-queues-out ingest flow with zero new infrastructure.; Directly portable to their local coding agents without buying anything — git worktrees are free, and the brief format (code to simplify, interfaces to preserve, required checks) is a structured in/out contract that matches their 'data is for machines' value. The single-Python-process + 64GB desktop + remote inference setup also validates their cheap-beats-fancy instinct."
+      }
+    ],
+    "confidence": null
+  },
+  "adjacency": {
+    "finds": [
+      {
+        "name": "contextcost",
+        "url": "https://contextcost.com/the-research",
+        "what_it_is": "Python CLI (MIT, on PyPI) that measures what a repository costs an AI coding agent to read in tokens, identifies what is wasting that context budget, and re-measures after changes to prove the saving.",
+        "different_angle": "Shares the postmortem's token-per-lookup mechanism (2,218 → 993) — quantifying whether a refactor actually improved LLM readability — but productizes it as a reusable static-analysis tool rather than an ad-hoc metric computed once inside a 19-hour run.",
+        "why_relevant_to_profile": "Exactly the profile's taste: small single-purpose Python CLI, MIT, no cloud, structured measurement in/out. Slots into their refactor pipelines as a cheap local gate so codebase changes are judged on context-efficiency, not vibes.",
+        "original_url": "https://github.com/CAOShurong/contextcost",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "Shard",
+        "url": "https://github.com/nihalgunu/Shard",
+        "what_it_is": "Apache-2.0 Python orchestrator that decomposes a natural-language coding task into a DAG of parallel subtasks and executes them concurrently in isolated git worktrees, with TDD as the feedback loop.",
+        "different_angle": "Shares the coordinator-worker + worktree-isolation mechanism (1,393 subagents across worktrees) but at hobbyist scale: an LLM-planned task DAG instead of a 3-level delegation tree, and test-driven verification per subtask instead of byte-for-byte CLI/schema diffs.",
+        "why_relevant_to_profile": "A self-hostable, open-source analog of the Hermes orchestrator the profile could run against their own code; natural-language prompt in, parallel branches/commits out fits their structured-pipeline preference.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "etch",
+        "url": "https://m.etch-official.com/product/list.html?cate_no=46",
+        "what_it_is": "Go CLI (MIT) for zero-config API change detection: record real API responses, diff them across versions or deploys, and approve changes — explicitly without writing tests.",
+        "different_angle": "Shares the postmortem's behavioral-verification mechanism (byte-for-byte CLI --help diffs, identical tool JSON schemas) but generalizes it to any interface: snapshot real outputs and diff them, catching the class of regression tests missed — like the suppress() rewrite that changed exception handling at ~65 sites.",
+        "why_relevant_to_profile": "Single-purpose, composable CLI they can wire into agent pipelines as a verification gate; the record → diff → approve flow produces machine-readable evidence per step, matching their commit-per-verified-step discipline.",
+        "original_url": "https://github.com/ojuschugh1/etch",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "Cog",
+        "url": "https://github.com/marciopuga/cog",
+        "what_it_is": "MIT-licensed plain-text memory layer (375 stars) you clone once and point all your agents at — one centralized markdown memory shared across tools and projects instead of per-tool silos.",
+        "different_angle": "Shares the auto-accumulated Markdown skill-document mechanism (months of procedures and verification habits injected into worker briefs) but inverts it: a curated, persistent, cross-agent memory you maintain and version, rather than a skill doc auto-generated per run.",
+        "why_relevant_to_profile": "Plain-text-first, no database, no cloud, no account — precisely the profile's stack. Gives their local agent fleet a shared memory they can read, edit by hand, and track in git.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "Cairn",
+        "url": "https://github.com/Abhishekxdg/cairn/blob/main/README.md",
+        "what_it_is": "Apache-2.0 append-only journal for AI agents living in a project's .agent/ directory — a git-like shared log of goals, decisions, tasks, and knowledge that persists across sessions and between agents.",
+        "different_angle": "Shares the markdown-memory mechanism but aims it at the multi-agent coordination problem the postmortem solved with written briefs: parallel agents read what the others just did instead of re-deriving state, via an append-only journal rather than a rewritten document.",
+        "why_relevant_to_profile": "For their multi-agent local setup, a shared append-only log in plain files (no DB, no account) is a portable coordination mechanism — including the resume-handoff pattern the postmortem needed when provider token expiry killed a run mid-flight.",
+        "url_status": "flagged"
+      }
+    ],
+    "sludge_check": "Discarded: codeongrass.com worktree post (vendor blog funneling to the Grass product), starlog.is agent-fleet article (page is dominated by starlog.dev self-promo ads), specshield26/specshield-cli (login-gated SaaS with pricing/cloud upsell — violates the no-account-before-value rule), hackernoon 'Context Tax' by Sonar (major-brand content marketing for their governance tools), ZenixTools JSON-schema guide (SEO tools-blog listicle), speakeasy PR #1817 (vendor changelog noise), and the github.laiyagushi.com 'semantic-appdiff' result (lookalike domain, 2 commits — untrustworthy mirror). Deprioritized: lantisprime/episodic-memory (252 open issues vs 3 stars — likely issue spam) and kunalkaiser/agentmemory (fork requiring the iii-engine). Kept five finds that each port one mechanism from the postmortem — context-cost metrics, worktree DAG orchestration, output-diff verification, curated markdown memory, and shared append-only agent journals — as small self-hostable tools.",
+    "_backend": "exa",
+    "_n_raw_results": 48
+  },
+  "_meta": {
+    "input": "---\ntitle: \"Refactoring Hermes with 1,393 agents\"\nsource: \"hidden for now\"\nauthor:\n  - \"[[Teknium]]\"\npublished: 2026-09-15\ncreated: 2026-09-17\ndescription: \"Hermes Agent refactored its own codebase: 1,393 subagents over about nineteen active hours cut non-test Python by 34.4%, for roughly $19,300 in",
+    "input_kind": "text",
+    "source_desc": "pasted text",
+    "model": "z-ai/glm-5.3-flash",
+    "synthesis_model": "z-ai/glm-5.3-flash",
+    "depth": "standard",
+    "backends": {
+      "resolve": "tavily",
+      "adjacency": "exa"
+    },
+    "degradation_notes": [],
+    "flagged_urls": [
+      "https://github.com/nihalgunu/Shard",
+      "https://github.com/marciopuga/cog",
+      "https://github.com/Abhishekxdg/cairn/blob/main/README.md"
+    ],
+    "profile_path": "C:\\Users\\dstee\\Hermes-projects\\relv\\profile.md",
+    "when": "2026-09-17T17:00:17.736565+00:00"
+  }
+}

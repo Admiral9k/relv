@@ -10,6 +10,7 @@ validate_find_urls: check each find's URL plausibly matches its name; for
 from __future__ import annotations
 
 import re
+import sys
 from urllib.parse import urlparse
 
 from .adapter import structured_complete
@@ -39,7 +40,11 @@ _NOISE_DOMAINS = ("businessinsider.com", "prnewswire.com", "globenewswire.com", 
 
 
 def adjacency_search(queries: list, cfg: Config, backend: str, n_results: int) -> list:
-    """Run each aspect query; return deduped raw results (url-unique, keeps first)."""
+    """Run each aspect query; return deduped raw results (url-unique, keeps first).
+
+    Returns [] when every query fails — the caller (cli) degrades gracefully
+    instead of crashing the run after the verdict (the paid part) succeeded.
+    """
     all_res = []
     seen = set()
     for q in queries:
@@ -49,9 +54,9 @@ def adjacency_search(queries: list, cfg: Config, backend: str, n_results: int) -
                     seen.add(r["url"])
                     all_res.append(r)
         except RuntimeError as e:
-            print(f"[adjacency] query {q!r} failed: {e}", flush=True)
+            print(f"[adjacency] query {q!r} failed: {e}", file=sys.stderr, flush=True)
     if not all_res:
-        raise RuntimeError("adjacency: all search queries failed or returned nothing")
+        print("[adjacency] all search queries failed or returned nothing — degrading", file=sys.stderr, flush=True)
     return all_res
 
 

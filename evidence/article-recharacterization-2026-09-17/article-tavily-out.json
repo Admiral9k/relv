@@ -1,0 +1,121 @@
+{
+  "verdict": {
+    "content_summary": "Teknium's technical post-mortem of Hermes Agent (Nous Research's open-source coding agent) autonomously refactoring its own 1.06M-line Python repo: a standing /goal objective fanned out to 1,393 subagents (218 concurrent) across 36 non-overlapping file groups in separate git worktrees, with a three-level delegation tree where the root agent only writes briefs, integrates branches, and runs checks. Workers were steered by an agent-maintained markdown 'skill file' of accumulated procedures and gated by machine-checkable contracts (identical JSON tool schemas, byte-for-byte --help diffs, frozen test-failure baselines, commit-per-verified-step), cutting non-test LOC 34.4% and gateway/run.py from 34,847 to 5,512 lines for ~$25k of remote Claude inference orchestrated by a single local Python process on an i7/64GB desktop. The post is unusually honest about failure modes: an expired auth token killed the run at 50 minutes (recovered via surviving commits and briefs plus a separate handoff-prep session), community review caught cross-plugin breakage the tests missed, and the tokens-per-lookup benchmark (2,218→993) is explicitly caveated as measuring lookup cost, not task performance. Ops lessons fold back into the repo: a shared Pyright server across ~30 worktrees to kill 8.7 GB of duplication, and an automated guardrail flagging removal of public names for review.",
+    "grabs": [
+      {
+        "type": "aspect",
+        "what": "Agent-authored markdown skill file that accumulates reusable procedures from daily use and is shared so other instances inherit them",
+        "why": "Pure plain-text-first — it's the same medium as their markdown-in/structured-queues-out pipeline. They can port this to their own coding and doc agents today without adopting Hermes: write procedures once, in markdown, where both humans and future agent sessions consume them, versioned alongside the code."
+      },
+      {
+        "type": "aspect",
+        "what": "Worktree-per-worker fan-out with a coordinator-only root: non-overlapping file partitions, written briefs per worker, three-level delegation, integration and checks consolidated at the top",
+        "why": "Matches 'cheap beats fancy' — the entire orchestrator was one local Python process on a desktop, with inference billed per-token via API, which is exactly their OpenRouter-style BYO-key setup. They already run local coding agents, so this is a directly portable blueprint for parallelizing refactors or doc-processing jobs on hardware they own."
+      },
+      {
+        "type": "aspect",
+        "what": "Machine-verifiable completion contracts plus durable-by-construction runs: byte-for-byte --help comparisons, JSON schema identity, frozen failure baselines, commit after each verified step, and crash-resume via surviving commits/briefs and a handoff doc written by a separate session",
+        "why": "This is 'prose is for humans, data is for machines' applied to trust: no trusting agent self-reports, only checkable invariants, with every verified step doubling as saved state. They can wire the same gates into their own pipelines so a killed run costs a resume, not a restart."
+      },
+      {
+        "type": "product",
+        "what": "Hermes Agent itself — open-source, single-process local orchestration, remote inference brought via key",
+        "why": "They run local coding agents and route models by key, and Hermes' orchestrator never leaves the machine while inference stays BYO-key — no per-seat subscription, no data locked in someone else's cloud. Even if they don't adopt it wholesale, the /goal standing-objective loop and the orchestrator's brief/integrate/check split are crib-worthy."
+      }
+    ],
+    "aspects": [
+      "Self-authored skill file: agent writes and revises a markdown procedures doc as it works; sharing the file bootstraps new instances with learned lessons",
+      "Git worktree-per-worker isolation with non-overlapping partitioning to minimize merge conflicts across concurrent agents",
+      "Coordinator-only root: delegation tree where the top node only writes briefs, reads reports, integrates branches, and runs checks",
+      "Durable-by-construction long runs: commit-per-verified-step plus file-based briefs and a handoff document so crashes resume instead of restart",
+      "Byte-level regression contracts as machine-checkable done-conditions: identical --help output, identical JSON tool schemas, frozen baseline for triaging test failures",
+      "Measure repo layout by agent token cost — tokens-per-symbol-lookup — treating codebase structure as a context-budget optimization rather than a human-readability one",
+      "Automated guardrail flagging removals of public names for human review, catching cross-boundary breakage that tests miss",
+      "Shared language-server instance across worktrees to bound resource duplication instead of N copies eating memory"
+    ],
+    "adjacency_queries": [
+      "agents that maintain their own markdown playbook or skill file that future sessions inherit and improve over time",
+      "frameworks that run parallel autonomous coding workers in git worktrees with a coordinator agent that only writes briefs and integrates",
+      "resumable long-running agent pipelines that survive crashes via per-step commits and file-based handoff documents",
+      "optimizing documentation or codebase structure to minimize tokens per lookup for LLM consumers instead of human readers"
+    ],
+    "models": [
+      {
+        "model": "z-ai/glm-5.3-flash",
+        "verdict": "aspect",
+        "why": "Pure plain-text-first — it's the same medium as their markdown-in/structured-queues-out pipeline. They can port this to their own coding and doc agents today without adopting Hermes: write procedures once, in markdown, where both humans and future agent sessions consume them, versioned alongside the code.; Matches 'cheap beats fancy' — the entire orchestrator was one local Python process on a desktop, with inference billed per-token via API, which is exactly their OpenRouter-style BYO-key setup. They already run local coding agents, so this is a directly portable blueprint for parallelizing refactors or doc-processing jobs on hardware they own."
+      }
+    ],
+    "confidence": null
+  },
+  "adjacency": {
+    "finds": [
+      {
+        "name": "Effective harnesses for long-running agents (Anthropic Engineering)",
+        "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+        "what_it_is": "Engineering writeup of a file-based harness for multi-session agents: an initializer session writes an init.sh, a claude-progress.txt log, and an initial git commit; every subsequent session makes incremental progress and leaves structured updates so a fresh context window can reconstruct state.",
+        "different_angle": "Shares the triaged post's crash-recovery mechanism (per-step commits plus a file that carries state across amnesia) but inverts the topology: Anthropic's pattern is a single linear chain of sessions resuming from a progress file, whereas Hermes fanned out a delegation tree with briefs — a useful contrast for deciding when one durable thread beats orchestration.",
+        "why_relevant_to_profile": "Directly portable into the user's local agent pipelines: progress-file plus git-commit checkpointing is plain-text, works offline, needs no managed database (fits the SQLite/cheap-beats-fancy ethos), and is exactly the kind of harness mechanism they want to port rather than buy.",
+        "url_status": "ok"
+      },
+      {
+        "name": "planning-with-files — crash-proof markdown plans for coding agents",
+        "url": "https://github.com/othmanadi/planning-with-files",
+        "what_it_is": "Open-source convention for persistent file-based planning: crash-proof markdown plans re-injected every turn, a progress.md, and a Topic Handoff Pattern (handoffs/*.md alongside progress.md) for long-running operational work; survives /clear and compaction.",
+        "different_angle": "Same mechanism as the post's recovery-via-surviving-commits-and-briefs, but packaged as a reusable, agent-agnostic markdown convention any local agent can adopt, instead of a bespoke one-run recovery story.",
+        "why_relevant_to_profile": "Markdown-first, self-hosted, no accounts or cloud — matches the plain-text-first stack and gives their ingest/agent pipelines a drop-in crash-resume layer built from files they can read and version in git.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "SKILLS.md: an open agent skills protocol",
+        "url": "https://skills.md",
+        "what_it_is": "Proposed open protocol where a single SKILLS.md instruction file (or a reference CLI: atskills get/save/triggers/prompt) turns any agent that can read files and run shell commands into a full skills client; resolved skills are just files on disk, with resolution, cache, and trigger rules specified.",
+        "different_angle": "Takes the post's agent-maintained markdown skill file and standardizes it into a vendor-neutral protocol with explicit resolution and trigger semantics — the mechanism as spec plus CLI rather than one repo's emergent convention.",
+        "why_relevant_to_profile": "Open, single-purpose, no vendor lock-in, BYO-everything: skills as plain files on disk compose with the small-tools philosophy and the multi-model OpenRouter/local setup, and the reference CLI is something to port or fork.",
+        "original_url": "https://arxiv.org/html/2608.12610v1",
+        "url_status": "re_resolved"
+      },
+      {
+        "name": "ONTO: a token-efficient columnar notation for LLM input",
+        "url": "https://arxiv.org/html/2604.17512v1",
+        "what_it_is": "Paper proposing ONTO, a columnar serialization for LLM input: field names declared once per entity, pipe-delimited rows, indentation for hierarchy; 46–51% token reduction vs JSON while staying human-readable and supporting nested data.",
+        "different_angle": "Attacks the same tokens-per-lookup problem the post benchmarked (2,218→993) at the data-format layer — redesign the serialization so cheap lookups hold by construction — instead of restructuring docs and measuring the delta afterward.",
+        "why_relevant_to_profile": "Their pipeline is 'markdown in, structured queues out' and they explicitly want data shaped for machines; ONTO is a concrete, portable format for the structured side of that pipeline, cutting token cost on OpenRouter billing and local context windows alike.",
+        "url_status": "flagged"
+      },
+      {
+        "name": "Markdown task files as an agent coordination queue",
+        "url": "https://dev.to/battyterm/i-let-ai-agents-manage-themselves-with-a-markdown-file-5547",
+        "what_it_is": "A coordination scheme where each task is a markdown file with YAML frontmatter (id, status, claimed_by, depends_on, priority); agents scan the files to find available or unblocked work — the frontmatter is the entire coordination protocol.",
+        "different_angle": "Same 'markdown files steer agents' substrate as the post's skill file, but carries work-state (a claimable queue with dependencies) instead of accumulated procedure — the filesystem as a task queue rather than as memory.",
+        "why_relevant_to_profile": "This is literally 'markdown in, structured queues out' applied to agent work: plain files, no server or database beyond the filesystem, composable with their local agents, and a mechanism they can graft onto the existing ingest pipeline.",
+        "url_status": "flagged"
+      }
+    ],
+    "sludge_check": "Discarded as sludge: shopclawmart.com 'creator playbook' (marketplace marketing for selling agents), GitKraken 12.0 on finance.yahoo.com (press release with customer-quote boilerplate), superset.sh and MindStudio's Remy post (product pitches wrapped around the worktree pattern; MindStudio's other post also funnels to their platform), finout.io '20 token optimization tips' (the listicle format the profile explicitly rejects), newline.co (course-signup marketing page), LinkedIn/SnapLogic (enterprise integration product content), and two Reddit threads (question posts with no mechanism content). Filtered as redundant rather than sludge: three overlapping AGENTS.md explainers (ericmjl blog, his dspn substack version, addyosmani) superseded by the SKILLS.md protocol pick; the durable-execution cluster (Temporal docs, mastra, vadim.blog, traversaal, Google ADK, augmentcode) restates the Anthropic harness mechanism with platform weight the profile rejects; YouTube items skipped on format (one is Neon-sponsored); understandingdata.com reads as an SEO outline; github.com/topics/worktree-manager is a directory page, not an artifact; pronovix is about serving llms.txt from websites — off-profile since the user consumes markdown locally, not publishes it.",
+    "_backend": "tavily",
+    "_n_raw_results": 48
+  },
+  "_meta": {
+    "input": "---\ntitle: \"Refactoring Hermes with 1,393 agents\"\nsource: \"hidden for now\"\nauthor:\n  - \"[[Teknium]]\"\npublished: 2026-09-15\ncreated: 2026-09-17\ndescription: \"Hermes Agent refactored its own codebase: 1,393 subagents over about nineteen active hours cut non-test Python by 34.4%, for roughly $19,300 in",
+    "input_kind": "text",
+    "source_desc": "pasted text",
+    "model": "z-ai/glm-5.3-flash",
+    "synthesis_model": "z-ai/glm-5.3-flash",
+    "depth": "standard",
+    "backends": {
+      "resolve": "tavily",
+      "adjacency": "tavily"
+    },
+    "degradation_notes": [
+      "adjacency backend degraded to tavily (missing key for configured backend)"
+    ],
+    "flagged_urls": [
+      "https://github.com/othmanadi/planning-with-files",
+      "https://arxiv.org/html/2604.17512v1",
+      "https://dev.to/battyterm/i-let-ai-agents-manage-themselves-with-a-markdown-file-5547"
+    ],
+    "profile_path": "C:\\Users\\dstee\\Hermes-projects\\relv\\profile.md",
+    "when": "2026-09-17T17:06:21.787125+00:00"
+  }
+}
