@@ -21,3 +21,6 @@ uv.lock
 .idea/
 .DS_Store
 Thumbs.db
+
+# internal briefs — never commit
+GOAL-BRIEF-VPS.md
