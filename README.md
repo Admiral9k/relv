@@ -1,5 +1,8 @@
 # relv
 
+**Adopt. Steal. Skip.**
+*Then look again, one layer out.*
+
 **Relevator** — profile-grounded triage + adjacency mining for the AI tool firehose.
 
 You paste a URL, an app name, or text. relv checks it against *your* declared profile and answers:
@@ -8,7 +11,50 @@ You paste a URL, an app name, or text. relv checks it against *your* declared pr
 2. **Adjacent relevance** — even when nothing's worth absorbing, extract the underlying *aspects* and search one layer out: who else uses that mechanism, differently, in a domain you should care about?
 3. **Emit** — `--emit-md` produces an ingest-ready markdown file your agent already knows how to absorb.
 
+Citation indexes have done this for scientific papers for decades, surfacing what a paper shares mechanically and determining who its neighbors are. relv brings that layer-out search out of the scientific world and to the agent-tool market, where the firehose is at its worst.
+
 The point is not another feed. The point is that the verdict lands in *your existing workflow* — your agent's ingest loop — instead of another open tab you'll never return to.
+
+## Real output (from a live run)
+
+Input: `https://x.com/hermeswatcher/status/2100351525398982661` (an X thread about the AGENTS.md convention)
+
+```
+SUMMARY: An X thread documenting the AGENTS.md convention as practiced by the
+Hermes agent: a project-root markdown file that acts as the agent's local
+source of truth — how the project works, run/test commands, conventions, and
+no-touch zones — so every session starts from the same foundation instead of
+rebuilding context from scratch. [...]
+
+GRABS:
+  [PRODUCT] AGENTS.md — a plain markdown file at the project root declaring
+      how the project works, how to run/test it, conventions, and what the
+      agent must never touch [...]
+  [ASPECT] Self-briefing bootstrap: the agent reads repo artifacts (README,
+      build files, commit log), interviews the user only for the unstated,
+      then drafts its own context [...]
+  [ASPECT] Pointer-file indirection: thin adapter files whose content is just
+      '@ AGENTS.md' so differently-named agent tools all resolve to one
+      canonical file [...]
+  [ASPECT] Hierarchical context resolution: walk up the directory tree
+      (bounded levels) and layer nearest-scope instructions over
+      parent-scope ones [...]
+
+ADJACENT FINDS: (mechanism, not category — same pattern, different domains)
+  - agent-memory — same markdown-in-repo-as-truth mechanism, but memory-
+    authored instead of instructions-authored
+  - EditorConfig File Format — the long-established prior art for the
+    walk-up-the-tree resolution mechanism, from the editor domain
+  - adobe/himl — same layered-resolution mechanism from the config-management
+    domain
+  [...5 finds total, each with its URL, what it is, the angle it shares,
+   and why it matters to the profile]
+
+degradation notes: X.com requires auth; resolved via search — paste text for
+                   best results
+```
+
+Every verdict comes with the reasoning shown; every run says what it had to work around.
 
 ## Install (uv)
 
