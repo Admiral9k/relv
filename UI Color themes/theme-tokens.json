@@ -1,0 +1,56 @@
+{
+  "name": "oxblood-lime-funky",
+  "description": "Dark Linear-like theme. Canvas is oxblood #220C10. Primary highlight is lime #6AFF00. Accents: aqua (system), magenta (human/social), ivory (soft light). One neon per component.",
+  "colors": {
+    "bg": "#220C10",
+    "surface": "#2B1216",
+    "raised": "#3A1A20",
+    "overlay": "#4A2228",
+    "border": "#4E262D",
+    "borderSubtle": "#3D1E24",
+    "text": "#F4EEE8",
+    "textMuted": "#B7A39F",
+    "textFaint": "#8A7470",
+    "primary": "#6AFF00",
+    "primaryHover": "#7FFF2A",
+    "primaryPressed": "#54D600",
+    "primaryMuted": "#1C3A0A",
+    "primaryOn": "#14080A",
+    "aqua": "#2ED7D0",
+    "aquaHover": "#4AE3DC",
+    "aquaMuted": "#0E3332",
+    "magenta": "#E84EC8",
+    "magentaHover": "#F06AD4",
+    "magentaMuted": "#3A1232",
+    "ivory": "#F3E6C8",
+    "ivoryMuted": "#3A3228",
+    "danger": "#FF5A6A",
+    "dangerMuted": "#3A1218",
+    "warning": "#FFB020",
+    "warningMuted": "#3A2A0C",
+    "success": "#6AFF00"
+  },
+  "roles": {
+    "canvas": "bg",
+    "sidebarAndCards": "surface",
+    "popoversHoverRows": "raised",
+    "hairlines": "border",
+    "primaryType": "text",
+    "secondaryType": "textMuted",
+    "ctaSelectedFocus": "primary",
+    "linksTagsInfoCharts": "aqua",
+    "mentionsPresenceNew": "magenta",
+    "softHighlightEmptyStates": "ivory"
+  },
+  "rules": [
+    "Lime is the only neon on a given component. Aqua or ivory supports it.",
+    "Do not place full-strength primary next to full-strength magenta on a large area.",
+    "Prefer warm off-white text (#F4EEE8) over cold gray or pure white.",
+    "Danger must stay brighter than the oxblood base or it will vanish.",
+    "Success reuses primary. Do not introduce a second green."
+  ],
+  "contrastNotes": {
+    "primaryOnBg": "~14:1",
+    "textOnBg": "AAA for body text"
+  }
+}

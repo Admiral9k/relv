@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>relv</title>
+<style>
+:root{
+  --bg:#220C10; --panel:#2B1216; --hover:#3A1A20; --hair:#4E262D;
+  --type:#F4EEE8; --type2:#B7A39F; --lime:#6AFF00; --aqua:#2ED7D0;
+  --mag:#E84EC8; --ivory:#F3E6C8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--type);font:13px/1.5 "Segoe UI",system-ui,sans-serif}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--hair);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---- app frame ---- */
+#app{display:grid;height:100%;
+  grid-template-rows:40px 1fr;
+  grid-template-columns:216px 200px 220px 1fr 232px;
+  grid-template-areas:
+    "topbar topbar topbar topbar topbar"
+    "hist grabs finds work notes";}
+#topbar{grid-area:topbar;display:flex;align-items:center;gap:8px;
+  background:var(--panel);border-bottom:1px solid var(--hair);padding:0 10px}
+#logo{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--type)}
+#logo svg{margin-right:2px}
+#topbar .spacer{flex:1}
+#inputbar{grid-column:1/-1;background:var(--bg);padding:8px 10px;border-bottom:1px solid var(--hair);
+  display:flex;gap:8px}
+#app{grid-template-rows:40px 54px 1fr;
+  grid-template-areas:"topbar topbar topbar topbar topbar" "inputbar inputbar inputbar inputbar inputbar" "hist grabs finds work notes"}
+
+/* ---- sidebars ---- */
+.side{background:var(--panel);border-right:1px solid var(--hair);overflow-y:auto;
+  display:flex;flex-direction:column}
+.side h3{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--type2);
+  padding:10px 12px 8px;border-bottom:1px solid var(--hair);position:sticky;top:0;background:var(--panel);z-index:2}
+#hist{grid-area:hist} #grabs{grid-area:grabs} #finds{grid-area:finds} #notes{grid-area:notes}
+
+.item{padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--hair);border-left:2px solid transparent}
+.item:hover{background:var(--hover)}
+.item.sel{background:var(--hover);border-left-color:var(--lime)}
+.item .t{color:var(--type);font-size:12px;line-height:1.35;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box:orient:vertical;overflow:hidden}
+.item .m{color:var(--type2);font-size:10px;margin-top:3px;display:flex;gap:6px;align-items:center}
+.badge{display:inline-block;padding:0 6px;border-radius:8px;font-size:9px;font-weight:600;letter-spacing:.06em}
+.badge.product{background:var(--lime);color:#220C10}
+.badge.aspect{background:transparent;color:var(--aqua);border:1px solid var(--aqua)}
+.badge.none{background:transparent;color:var(--type2);border:1px solid var(--hair)}
+
+/* grabs panel entries */
+.item .gname{font-size:11.5px;color:var(--type)}
+.item .gsub{font-size:10px;color:var(--type2);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box:orient:vertical;overflow:hidden}
+
+/* finds entries highlight target app names */
+mark{background:transparent;color:var(--mag);font-weight:600}
+
+/* ---- input bar ---- */
+#q{flex:1;background:var(--panel);color:var(--type);border:1px solid var(--hair);border-radius:6px;
+  padding:8px 10px;font:13px/1.4 inherit;resize:none;height:38px}
+#q:focus{outline:none;border-color:var(--lime)}
+#go{background:var(--lime);color:#220C10;border:none;border-radius:6px;padding:0 18px;
+  font-weight:700;font-size:13px;cursor:pointer}
+#go:disabled{opacity:.45;cursor:default}
+#depth{background:var(--panel);color:var(--type);border:1px solid var(--hair);border-radius:6px;padding:6px}
+#status{color:var(--type2);font-size:11px;align-self:center;min-width:180px;text-align:right}
+
+/* ---- workspace ---- */
+#work{grid-area:work;overflow-y:auto;padding:18px 22px;background:var(--bg)}
+#work h2{font-size:15px;margin-bottom:2px;color:var(--type)}
+#work .meta{color:var(--type2);font-size:11px;margin-bottom:14px}
+#work .summary{margin:12px 0 18px;color:var(--type);font-size:13.5px;line-height:1.65;
+  border-left:2px solid var(--hair);padding-left:12px}
+#work h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--type2);
+  margin:18px 0 8px}
+.grab{background:var(--panel);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.grab .gh{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.grab .gw{color:var(--type);font-size:12.5px;font-weight:600}
+.grab .gy{color:var(--type2);font-size:11.5px;line-height:1.5}
+.findcard{background:var(--panel);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.findcard .fh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.findcard .fn{color:var(--type);font-size:12.5px;font-weight:600;cursor:pointer}
+.findcard .fn:hover{color:var(--lime)}
+.findcard .fu{color:var(--aqua);font-size:10.5px;text-decoration:none;word-break:break-all}
+.findcard .ff{color:var(--type2);font-size:11px;margin-top:4px;line-height:1.5}
+.degr{background:var(--hover);border:1px solid var(--hair);border-radius:6px;color:var(--ivory);
+  padding:8px 12px;font-size:11.5px;margin:8px 0}
+.empty{color:var(--type2);font-size:12px;padding:14px;opacity:.8}
+
+/* ---- notes ---- */
+#noteta{flex:1;background:transparent;border:none;color:var(--type);font:12.5px/1.55 inherit;
+  padding:10px 12px;resize:none;outline:none}
+#notesave{margin:8px 12px;background:transparent;color:var(--aqua);border:1px solid var(--aqua);
+  border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer}
+#notesave:hover{background:var(--aqua);color:#220C10}
+#notefoot{padding:6px 12px 10px;color:var(--type2);font-size:10px}
+
+/* topbar menu */
+.menu{position:relative}
+.menu>button{background:transparent;border:none;color:var(--type2);font:12px inherit;
+  padding:4px 10px;border-radius:4px;cursor:pointer}
+.menu>button:hover{background:var(--hover);color:var(--type)}
+.menu .pop{display:none;position:absolute;top:100%;left:0;background:var(--hover);
+  border:1px solid var(--hair);border-radius:6px;min-width:210px;z-index:10;padding:4px}
+.menu.open .pop{display:block}
+.pop div{padding:7px 10px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--type)}
+.pop div:hover{background:var(--panel)}
+.pop .k{color:var(--type2);font-size:10px;float:right;margin-left:8px}
+.pop .kv{display:flex;justify-content:space-between}
+.pop .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot.on{background:var(--lime)} .dot.off{background:var(--hair)}
+
+@media (max-width:1100px){ #app{grid-template-columns:170px 0 0 1fr 200px} #grabs,#finds{display:none} }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <circle cx="5.5" cy="12" r="3.6" fill="#6AFF00"/>
+        <circle cx="18" cy="6" r="2.3" fill="#B7A39F"/>
+        <circle cx="18" cy="18" r="2.3" fill="#B7A39F"/>
+        <path d="M8.9 12 H13 M13 12 L15.9 7.5 M13 12 L15.9 16.5" stroke="#4E262D" stroke-width="1.6"/>
+      </svg>
+      relv
+    </div>
+    <div class="spacer"></div>
+    <div class="menu" id="menu">
+      <button>Menu ▾</button>
+      <div class="pop">
+        <div onclick="loadProfile()">Profile</div>
+        <div onclick="alert('relv v1.1 — the UI is a beta shell over the same pipeline the CLI runs.')">About</div>
+        <div class="kv" id="keysrow">Keys <span id="keys" class="k">…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="inputbar">
+    <textarea id="q" placeholder="Paste a URL, an app name, or firehose text — then Enter" rows="2"></textarea>
+    <select id="depth">
+      <option value="">depth: standard</option>
+      <option value="picky">picky</option>
+      <option value="broad">broad</option>
+    </select>
+    <button id="go" onclick="run()">GO</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="side" id="hist"><h3>History</h3><div id="histlist"></div></div>
+  <div class="side" id="grabs"><h3>Grabs</h3><div id="grabslist"><div class="empty">No run selected</div></div></div>
+  <div class="side" id="finds"><h3>Adjacent finds</h3><div id="findslist"><div class="empty">No run selected</div></div></div>
+
+  <div id="work"><div class="empty">Paste something and hit GO. Every run auto-saves here.</div></div>
+
+  <div class="side" id="notes">
+    <h3>Notes</h3>
+    <textarea id="noteta" placeholder="Took anything? Keep the receipt here."></textarea>
+    <button id="notesave" onclick="saveNote()">Save note</button>
+    <div id="notefoot"></div>
+  </div>
+</div>
+
+<script>
+let current = null;       // full run output of selected run
+let currentId = null;
+
+const $ = id => document.getElementById(id);
+window.tick = msg => { $("status").textContent = msg; };
+
+// ---- history ----
+async function refreshHistory(){
+  const runs = JSON.parse(await window.pywebview.api.list_runs());
+  $("histlist").innerHTML = runs.map(r => `
+    <div class="item" id="h${r.id}" onclick="openRun(${r.id})">
+      <div class="t">${esc(r.input)}</div>
+      <div class="m">
+        <span class="badge ${r.verdict_rollup}">${r.verdict_rollup.toUpperCase()}</span>
+        <span>${(r.created_at||'').slice(5,10)}</span>
+        ${r.notes ? '<span style="color:var(--mag)">✎</span>' : ''}
+      </div>
+    </div>`).join('') || '<div class="empty">No runs yet</div>';
+}
+
+async function openRun(id){
+  currentId = id;
+  const r = JSON.parse(await window.pywebview.api.get_run(id));
+  current = JSON.parse(r.output_json);
+  document.querySelectorAll("#histlist .item").forEach(e=>e.classList.remove("sel"));
+  const el = $("h"+id); if(el) el.classList.add("sel");
+  render(current);
+  $("noteta").value = r.notes || "";
+  $("notefoot").textContent = "run #"+id+" · "+(r.created_at||"").slice(0,16).replace("T"," ");
+}
+
+// ---- render a run into workspace + sidebars ----
+function render(out){
+  const v = out.verdict, a = out.adjacency, m = out._meta;
+  const top = (v.grabs||[]).find(g=>g.type!=="none");
+  const roll = top ? top.type : "none";
+
+  $("work").innerHTML = `
+    <h2>${esc((m.input||"").slice(0,120))}</h2>
+    <div class="meta">${m.input_kind} · ${m.model} · ${m.depth} · ${(m.when||"").slice(0,16).replace("T"," ")}
+      &nbsp; <span class="badge ${roll}">${roll.toUpperCase()}</span></div>
+    ${ (m.degradation_notes||[]).length ? `<div class="degr">${m.degradation_notes.map(esc).join("<br>")}</div>` : "" }
+    <div class="summary">${esc(v.content_summary||"")}</div>
+    <h4>Grabs</h4>
+    ${(v.grabs||[]).map((g,i)=>`
+      <div class="grab" id="g${i}">
+        <div class="gh"><span class="badge ${g.type}">${g.type.toUpperCase()}</span>
+        <span class="gw" id="gw${i}">${esc(g.what)}</span></div>
+        <div class="gy">${esc(g.why||"")}</div>
+      </div>`).join("")}
+    <h4>Aspects</h4>
+    ${(v.aspects||[]).map(x=>`<div class="findcard" style="padding:6px 12px">${esc(x)}</div>`).join("")}
+    <h4>Adjacent finds</h4>
+    ${a.reason ? `<div class="degr">${esc(a.reason)}</div>` : (a.finds||[]).map((f,j)=>`
+      <div class="findcard" id="f${j}">
+        <div class="fh"><span class="fn" onclick="jump('gw${j*99}0')">${esc(f.name)}</span>
+        <a class="fu" href="${esc(f.url)}" target="_blank">${esc(f.url)}</a></div>
+        <div class="ff">${esc(f.what_it_is||"")}</div>
+        <div class="ff" style="color:var(--aqua)">angle: ${esc(f.different_angle||"")}</div>
+        <div class="ff">why: ${esc(f.why_relevant_to_profile||"")}</div>
+      </div>`).join("")}
+    ${(a.finds||[]).some(f=>f.url_status==="flagged") ? `<div class="degr">⚠ flagged URLs: ${a.finds.filter(f=>f.url_status==="flagged").map(f=>esc(f.url)).join(", ")}</div>`:""}
+  `;
+
+  // sidebar 2: grabs (app mentions)
+  $("grabslist").innerHTML = (v.grabs||[]).map((g,i)=>`
+    <div class="item" onclick="flash('gw${i*99}0','g${i}')">
+      <span class="badge ${g.type}">${g.type.toUpperCase()}</span>
+      <div class="gname" id="gw${i*99}0">${esc(g.what)}</div>
+      <div class="gsub">${esc(g.why||"")}</div>
+    </div>`).join("") || '<div class="empty">No grabs</div>';
+
+  // sidebar 3: adjacent finds
+  $("findslist").innerHTML = (a.finds||[]).map((f,j)=>`
+    <div class="item" onclick="jumpToF(${j})">
+      <div class="gname" id="fw${j}">${esc(f.name)}</div>
+      <div class="gsub">${esc((f.different_angle||"").slice(0,90))}</div>
+    </div>`).join("") || `<div class="empty">${a.reason?esc(a.reason):"No finds"}</div>`;
+}
+
+// ---- cross-highlight: click sidebar item -> scroll+flash in workspace ----
+function flash(workspaceId, cardId){
+  jump(workspaceId); const c=$(cardId); if(c){c.style.borderColor="var(--lime)";
+    setTimeout(()=>c.style.borderColor="var(--hair)",1200);}
+}
+function jump(id){const el=$(id); if(el) el.scrollIntoView({behavior:"smooth",block:"center"});}
+function jumpToF(j){jump("f"+j);}
+
+// ---- notes ----
+async function saveNote(){
+  if(currentId==null) return;
+  await window.pywebview.api.save_note(currentId, $("noteta").value);
+  $("notefoot").textContent = "saved " + new Date().toLocaleTimeString();
+  refreshHistory();
+}
+
+// ---- run pipeline ----
+async function run(){
+  const text = $("q").value.trim(); if(!text) return;
+  $("go").disabled = true; $("status").textContent = "Starting…";
+  const depth = $("depth").value || null;
+  const res = JSON.parse(await window.pywebview.api.run(text, depth, null));
+  $("go").disabled = false;
+  if(!res.ok){ $("status").textContent = "Failed"; alert("relv error:\n"+res.error); return; }
+  current = res.run; currentId = res.run._run_id;
+  render(current);
+  $("noteta").value = "";
+  refreshHistory().then(()=>{ const el=$("h"+currentId); if(el) el.classList.add("sel"); });
+}
+
+// ---- misc ----
+async function loadProfile(){
+  const p = await window.pywebview.api.get_profile();
+  alert(p ? "Your profile (edit profile.md in the relv UI folder):\n\n"+p.slice(0,1500) : "No profile loaded");
+}
+async function loadKeys(){
+  const k = JSON.parse(await window.pywebview.api.get_keys_status());
+  $("keys").innerHTML = ["openrouter","tavily","exa"].map(n =>
+    `<span class="dot ${k[n]?"on":"off"}"></span>${n}`).join(" ");
+}
+document.addEventListener("click", e=>{
+  const menu = $("menu");
+  if(!menu.contains(e.target)) menu.classList.remove("open");
+});
+$("menu").querySelector("button").onclick = ()=> $("menu").classList.toggle("open");
+
+$("q").addEventListener("keydown", e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); run(); }
+});
+
+function esc(s){return (s??"").toString().replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+window.addEventListener("pywebviewready", ()=>{ refreshHistory(); loadKeys(); });
+</script>
+</body>
+</html>

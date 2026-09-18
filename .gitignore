@@ -37,3 +37,6 @@ goal-brief.md
 
 # relv run output
 relv-emissions/
+
+# relv UI run store (user-local)
+relv-history.db

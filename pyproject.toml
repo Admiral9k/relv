@@ -30,10 +30,13 @@ Homepage = "https://github.com/Admiral9k/relv"
 Repository = "https://github.com/Admiral9k/relv"
 
 [project.optional-dependencies]
-ui = ["pywebview>=5.0"]
+ui = [
+    "pywebview>=5.0",
+]
 
 [project.scripts]
 relv = "relv.cli:main"
+relv-ui = "relv.ui:main"
 
 [dependency-groups]
 dev = ["pytest>=8.0"]

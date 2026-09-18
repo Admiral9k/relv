@@ -1,0 +1,64 @@
+/* Dark funky theme
+   Base: #220C10  |  Primary: #6AFF00
+   Accents: aqua, magenta, ivory
+*/
+
+:root {
+  /* Canvas */
+  --bg: #220C10;
+  --surface: #2B1216;
+  --raised: #3A1A20;
+  --overlay: #4A2228;
+  --border: #4E262D;
+  --border-subtle: #3D1E24;
+
+  /* Type */
+  --text: #F4EEE8;
+  --text-muted: #B7A39F;
+  --text-faint: #8A7470;
+
+  /* Primary — lime (one neon per component) */
+  --primary: #6AFF00;
+  --primary-hover: #7FFF2A;
+  --primary-pressed: #54D600;
+  --primary-muted: #1C3A0A;
+  --primary-on: #14080A;
+
+  /* Accents */
+  --aqua: #2ED7D0;
+  --aqua-hover: #4AE3DC;
+  --aqua-muted: #0E3332;
+
+  --magenta: #E84EC8;
+  --magenta-hover: #F06AD4;
+  --magenta-muted: #3A1232;
+
+  --ivory: #F3E6C8;
+  --ivory-muted: #3A3228;
+
+  /* Semantic */
+  --danger: #FF5A6A;
+  --danger-muted: #3A1218;
+  --warning: #FFB020;
+  --warning-muted: #3A2A0C;
+  --success: var(--primary);
+
+  /* Focus / rings */
+  --ring: var(--primary);
+  --ring-offset: var(--bg);
+
+  /* Shadows on wine-dark */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--text);
+}

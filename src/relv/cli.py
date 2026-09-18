@@ -120,6 +120,15 @@ def _load_profile(cfg: Config) -> str:
 def main(argv: list | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]  # console-script entry points call main() bare
+    if argv and argv[0] == "ui":
+        # launch the pywebview UI (relv[ui] extra); defer import so the CLI
+        # package works without pywebview installed
+        try:
+            from .ui import main as ui_main
+        except ImportError:
+            print("relv: UI not installed — run: uv tool install --with relv[ui] relv  (or pip install relv[ui])")
+            return 1
+        return ui_main(argv[1:])
     if argv and argv[0] == "init":
         write_default_config(str(Path.cwd()))
         _write_default_profile(str(Path.cwd()))
