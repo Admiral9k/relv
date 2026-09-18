@@ -40,11 +40,11 @@ uv run relv https://example.com --depth picky
 uv run relv https://example.com --model z-ai/glm-5.3
 ```
 
-Setup: copy the default profile and edit it (or use the generator prompt below), optionally add a `config.yaml`:
+Setup: run init, then edit the profile it writes — the profile is the mechanism (or use the generator prompt below):
 
 ```
-cp src/relv/default_profile.md profile.md   # then edit to declare who YOU are
-uv run relv init                            # writes a default config.yaml
+uv run relv init    # writes config.yaml AND profile.md
+# now edit profile.md — it is YOU the tool grounds against
 ```
 
 Keys come from the environment (never from files in the repo):
